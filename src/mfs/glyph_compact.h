@@ -2,7 +2,7 @@
 
 #include "common/base.h"
 
-// We assume that max size fpr glyph is 8*8.
+// We assume that max size for glyph is 8*8.
 class GlyphCompact {
  public:
   uint64_t mask;
