@@ -1,5 +1,5 @@
 cmake_minimum_required( VERSION 3.5 )
-project( competitions )
+project( icfpc2020 )
 if (APPLE)
     set(CMAKE_C_COMPILER /usr/local/bin/gcc-9)
     set(CMAKE_CXX_COMPILER /usr/local/bin/g++-9)
@@ -11,14 +11,18 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -Wextra")
 include_directories( PRIVATE "${PROJECT_SOURCE_DIR}/src" )
 find_package( Threads )
 
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-sign-compare -Wno-unused-but-set-variable")
+
+add_library(stb STATIC ${PROJECT_SOURCE_DIR}/src/stb/wrapper.cpp)
+
 file( GLOB_RECURSE APP_SOURCES RELATIVE "${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/src/app/*.cpp" )
 add_executable( app ${APP_SOURCES} )
-target_link_libraries( app ${CMAKE_THREAD_LIBS_INIT} )
+target_link_libraries( app ${CMAKE_THREAD_LIBS_INIT} stb )
 
 file( GLOB_RECURSE MFS_SOURCES RELATIVE "${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/src/mfs/*.cpp" )
 add_executable( mfs ${MFS_SOURCES} )
-target_link_libraries( mfs ${CMAKE_THREAD_LIBS_INIT} )
+target_link_libraries( mfs ${CMAKE_THREAD_LIBS_INIT} stb )
 
 file( GLOB_RECURSE SOLVER_SOURCES RELATIVE "${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/src/solver/*.cpp" )
 add_executable( solver ${SOLVER_SOURCES} )
-target_link_libraries( solver ${CMAKE_THREAD_LIBS_INIT} )
+target_link_libraries( solver ${CMAKE_THREAD_LIBS_INIT} stb )
