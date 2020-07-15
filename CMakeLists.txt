@@ -15,6 +15,10 @@ file( GLOB_RECURSE APP_SOURCES RELATIVE "${PROJECT_SOURCE_DIR}" "${PROJECT_SOURC
 add_executable( app ${APP_SOURCES} )
 target_link_libraries( app ${CMAKE_THREAD_LIBS_INIT} )
 
+file( GLOB_RECURSE MFS_SOURCES RELATIVE "${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/src/mfs/*.cpp" )
+add_executable( mfs ${MFS_SOURCES} )
+target_link_libraries( mfs ${CMAKE_THREAD_LIBS_INIT} )
+
 file( GLOB_RECURSE SOLVER_SOURCES RELATIVE "${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/src/solver/*.cpp" )
 add_executable( solver ${SOLVER_SOURCES} )
 target_link_libraries( solver ${CMAKE_THREAD_LIBS_INIT} )
