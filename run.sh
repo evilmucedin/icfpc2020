@@ -1,3 +1,3 @@
 #!/bin/sh
 cd build
-exec ./app "$@"
+./app "$@" || echo "run error code: $?"
