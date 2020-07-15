@@ -1,9 +1,9 @@
 #!/bin/sh
 mkdir -p build
 cd build
+rm -f ../release/build/app.exe || true
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j 8
-rm -f ../release/build/app.exe || true
 cp ../release/build/app . || true
 cp ../release/build/app.exe app || true
 # cd src/app
