@@ -14,3 +14,7 @@ find_package( Threads )
 file( GLOB_RECURSE APP_SOURCES RELATIVE "${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/src/app/*.cpp" )
 add_executable( app ${APP_SOURCES} )
 target_link_libraries( app ${CMAKE_THREAD_LIBS_INIT} )
+
+file( GLOB_RECURSE SOLVER_SOURCES RELATIVE "${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/src/solver/*.cpp" )
+add_executable( solver ${SOLVER_SOURCES} )
+target_link_libraries( solver ${CMAKE_THREAD_LIBS_INIT} )
