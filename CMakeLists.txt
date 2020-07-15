@@ -19,6 +19,10 @@ file( GLOB_RECURSE APP_SOURCES RELATIVE "${PROJECT_SOURCE_DIR}" "${PROJECT_SOURC
 add_executable( app ${APP_SOURCES} )
 target_link_libraries( app ${CMAKE_THREAD_LIBS_INIT} stb )
 
+file( GLOB_RECURSE APP_SOURCES RELATIVE "${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/src/stb/sample/*.cpp" )
+add_executable( stb_sample ${APP_SOURCES} )
+target_link_libraries( stb_sample ${CMAKE_THREAD_LIBS_INIT} stb )
+
 file( GLOB_RECURSE MFS_SOURCES RELATIVE "${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/src/mfs/*.cpp" )
 add_executable( mfs ${MFS_SOURCES} )
 target_link_libraries( mfs ${CMAKE_THREAD_LIBS_INIT} stb )
