@@ -1,0 +1,41 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(gdb) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            // "program": "${workspaceFolder}/debug/build/google_code_jam",
+            // "program": "${workspaceFolder}/debug/build/hackerrank",
+            // "program": "${workspaceFolder}/debug/build/icfppc_2019",
+            // "program": "${workspaceFolder}/debug/build/project_euler",
+            "program": "${workspaceFolder}/debug/build/tester",
+            "args": [
+                "binary_search_tree"
+                // "minimum_spanning_tree"
+                // "subtrees_and_paths__lcte",
+                // "pen_testing"
+                // "tests/google/code_jam/2019/r2/p3.in"
+                // "../tests/hackerrank/practice/data_structures/advanced/subtrees_and_paths.1.in"
+                // "-threads",
+                // "1"
+                // "695"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/debug/",
+            "environment": [],
+            "externalConsole": true,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        }
+    ]
+}
