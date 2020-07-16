@@ -15,4 +15,6 @@ class Glyph {
   Glyph(GlyphType _type);
   Glyph(FunctionType _ftype);
   Glyph(GlyphType _type, int64_t _value);
+
+  void Print() const;
 };
