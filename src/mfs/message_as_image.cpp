@@ -74,7 +74,7 @@ void MessageAsImage::ReadPNG(const std::string& png_file_name) {
   Assert((f.getHeight() % png_scale) == 0);
   Assert((f.getWidth() % png_scale) == 0);
   unsigned h = f.getHeight() / png_scale, w = f.getWidth() / png_scale;
-  assert(VerifyPNG(f, png_scale, h, w));
+  Assert(VerifyPNG(f, png_scale, h, w));
   m = la::MatrixBool(h - 2, w - 2);  // Add one more empty row and column
   for (unsigned i = 0; i < h - 3; ++i) {
     for (unsigned j = 0; j < w - 3; ++j) {
