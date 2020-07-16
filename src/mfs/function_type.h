@@ -9,5 +9,7 @@ enum class FunctionType {
   DIVISION,
   EQUALITY,
   STRICT_LESS,
+  F170,
+  F341,
   END
 };
