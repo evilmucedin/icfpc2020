@@ -14,7 +14,7 @@ GlyphDecoder gd;
 }  // namespace
 
 void GlyphDecoder::RegisterGlyphType(GlyphType type, uint64_t mask) {
-  Assert(mask & 1);
+  Assert((mask & 1) || (mask == MASK_DOTS));
   Assert(map_mask_glyph_type.find(mask) == map_mask_glyph_type.end());
   Assert(map_glyph_type_mask.find(type) == map_glyph_type_mask.end());
   map_mask_glyph_type[mask] = type;
