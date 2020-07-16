@@ -3,7 +3,9 @@ BasedOnStyle: Google
 IncludeCategories:
   - Regex:           'common/'
     Priority:        2
-  - Regex:           '<.*>'
+  - Regex:           'stb/'
     Priority:        3
+  - Regex:           '<.*>'
+    Priority:        4
   - Regex:           '.*'
     Priority:        1
