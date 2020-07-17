@@ -14,6 +14,7 @@ std::string messages_dir = "../src/mfs/messages/";
 }
 
 void PNGExample(const std::string& filename) {
+  // MessageAsImage::PrintPNG(filename);
   MessageAsImage mi(filename);
   // mi.Print();
   MessageDecoder md(GlyphDecoder::GetDecoder());
@@ -22,7 +23,7 @@ void PNGExample(const std::string& filename) {
 }
 
 int main() {
-  PNGExample("../src/mfs/messages/message14.png");
+  PNGExample("../src/mfs/messages/message1.png");
   //   GlyphDecoder gd = GlyphDecoder::GetDecoder();
   //   for (int64_t i = 0; i < 30; ++i) {
   //     auto ei = gd.Encode(Glyph(GlyphType::VARIABLE, i));

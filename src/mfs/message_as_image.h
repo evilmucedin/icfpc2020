@@ -16,4 +16,5 @@ class MessageAsImage {
 
   void ReadPNG(const std::string& png_file_name);
   void Print() const;
+  static void PrintPNG(const std::string& png_file_name);
 };
