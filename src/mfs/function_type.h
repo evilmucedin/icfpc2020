@@ -18,6 +18,8 @@ enum class FunctionType {
   B_COMBINATOR = 20,
   K_COMBINATOR = 21,  // Also works as 'True' from boolean operators
   FALSE_SECOND = 22,  // Also works as 'False' from boolean operators
+  POWER_OF_TWO = 23,
   I_COMBINATOR = 24,
+  CONS = 25,
   END
 };
