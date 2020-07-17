@@ -8,5 +8,6 @@ class Line {
  public:
   std::vector<Expression> v;
 
+  void Compress();
   void Print() const;
 };

@@ -48,7 +48,7 @@ Expression Apply(FunctionType ftype) {
   return {};
 }
 
-Expression Apply(FunctionType ftype, Expression& e0) {
+Expression Apply(FunctionType ftype, const Expression& e0) {
   assert(ExpectedParameters(ftype) == 1);
   Expression e;
   switch (ftype) {
@@ -106,7 +106,8 @@ Expression Apply(FunctionType ftype, Expression& e0) {
   return {};
 }
 
-Expression Apply(FunctionType ftype, Expression& e0, Expression& e1) {
+Expression Apply(FunctionType ftype, const Expression& e0,
+                 const Expression& e1) {
   assert(ExpectedParameters(ftype) == 2);
   switch (ftype) {
     case FunctionType::SUM:
@@ -137,15 +138,15 @@ Expression Apply(FunctionType ftype, Expression& e0, Expression& e1) {
     case FunctionType::K_COMBINATOR:
       return e0;
     case FunctionType::FALSE__SECOND:
-      return e0;
+      return e1;
     default:
       assert(false);
   }
   return {};
 }
 
-Expression Apply(FunctionType ftype, Expression& e0, Expression& e1,
-                 Expression& e2) {
+Expression Apply(FunctionType ftype, const Expression& e0, const Expression& e1,
+                 const Expression& e2) {
   assert(ExpectedParameters(ftype) == 3);
   Expression e;
   switch (ftype) {
@@ -186,4 +187,20 @@ Expression Apply(FunctionType ftype, Expression& e0, Expression& e1,
       assert(false);
   }
   return {};
+}
+
+Expression Apply(FunctionType ftype, const std::vector<Expression>& v) {
+  switch (v.size()) {
+    case 0:
+      return Apply(ftype);
+    case 1:
+      return Apply(ftype, v[0]);
+    case 2:
+      return Apply(ftype, v[0], v[1]);
+    case 3:
+      return Apply(ftype, v[0], v[1], v[2]);
+    default:
+      assert(false);
+      return {};
+  }
 }
