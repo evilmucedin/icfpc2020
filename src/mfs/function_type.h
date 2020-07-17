@@ -11,12 +11,12 @@ enum class FunctionType {
   STRICT_LESS = 12,
   MODULATE = 13,
   DEMODULATE = 14,
-  F15 = 15,  // SEND
+  SEND = 15,
   NEGATE = 16,
   S_COMBINATOR = 18,
-  F19 = 19,
+  C_COMBINATOR = 19,
   B_COMBINATOR = 20,
   K_COMBINATOR = 21,  // Also works as 'True' from boolean operators
-  FALSE_SECOND = 22,
+  FALSE_SECOND = 22,  // Also works as 'False' from boolean operators
   END
 };
