@@ -20,7 +20,7 @@ enum class FunctionType {
   FALSE_SECOND = 22,  // Also works as 'False' from boolean operators
   POWER_OF_TWO = 23,
   I_COMBINATOR = 24,
-  CONS = 25,
-  CAR = 26,
+  CONS_PAIR = 25,
+  CAR_FIRST = 26,
   END
 };
