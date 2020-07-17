@@ -5,6 +5,7 @@
 #include "glyph_compact.h"
 #include "glyph_type.h"
 
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -16,8 +17,12 @@ class GlyphDecoder {
   std::unordered_map<GlyphType, uint64_t> map_glyph_type_mask;
   std::unordered_map<FunctionType, uint64_t> map_function_type_mask;
 
-  void RegisterGlyphType(GlyphType type, uint64_t mask);
-  void RegisterFunctionType(FunctionType type, uint64_t mask);
+  std::unordered_map<std::string, GlyphType> map_id_glyph_type;
+  std::unordered_map<std::string, FunctionType> map_id_function_type;
+
+  void RegisterGlyphType(GlyphType type, const std::string& id, uint64_t mask);
+  void RegisterFunctionType(FunctionType type, const std::string& id,
+                            uint64_t mask);
 
  public:
   GlyphDecoder();

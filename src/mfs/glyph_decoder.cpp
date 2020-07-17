@@ -11,20 +11,26 @@ uint64_t MASK_DOT = 1 << 8;
 GlyphDecoder gd;
 }  // namespace
 
-void GlyphDecoder::RegisterGlyphType(GlyphType type, uint64_t mask) {
+void GlyphDecoder::RegisterGlyphType(GlyphType type, const std::string& id,
+                                     uint64_t mask) {
   Assert((mask & 1) || (mask == MASK_DOT));
   Assert(map_mask_glyph_type.find(mask) == map_mask_glyph_type.end());
   Assert(map_glyph_type_mask.find(type) == map_glyph_type_mask.end());
+  Assert(map_id_glyph_type.find(id) == map_id_glyph_type.end());
   map_mask_glyph_type[mask] = type;
   map_glyph_type_mask[type] = mask;
+  map_id_glyph_type[id] = type;
 }
 
-void GlyphDecoder::RegisterFunctionType(FunctionType type, uint64_t mask) {
+void GlyphDecoder::RegisterFunctionType(FunctionType type,
+                                        const std::string& id, uint64_t mask) {
   Assert(mask & 1);
   Assert(map_mask_function_type.find(mask) == map_mask_function_type.end());
   Assert(map_function_type_mask.find(type) == map_function_type_mask.end());
+  Assert(map_id_function_type.find(id) == map_id_function_type.end());
   map_mask_function_type[mask] = type;
   map_function_type_mask[type] = mask;
+  map_id_function_type[id] = type;
 }
 
 GlyphDecoder::GlyphDecoder() { InitMap(); }
@@ -32,64 +38,68 @@ GlyphDecoder::GlyphDecoder() { InitMap(); }
 void GlyphDecoder::InitMap() {
   rows.resize(8, 1);
   for (unsigned i = 1; i < 8; ++i) rows[i] = (rows[i - 1] << 8);
-  RegisterGlyphType(GlyphType::ONE, rows[0] + rows[1]);
-  RegisterGlyphType(GlyphType::DOT, MASK_DOT);
-  RegisterGlyphType(GlyphType::EQUALITY, 7 * rows[0] + rows[1] + 7 * rows[2]);
-  RegisterGlyphType(GlyphType::OPERAND, 3 * rows[0] + rows[1]);
-  RegisterFunctionType(FunctionType::SUCCESSOR,
+  RegisterGlyphType(GlyphType::ONE, "X", rows[0] + rows[1]);
+  RegisterGlyphType(GlyphType::DOT, ".", MASK_DOT);
+  RegisterGlyphType(GlyphType::EQUALITY, "=",
+                    7 * rows[0] + rows[1] + 7 * rows[2]);
+  RegisterGlyphType(GlyphType::OPERAND, "ap", 3 * rows[0] + rows[1]);
+  RegisterFunctionType(FunctionType::SUCCESSOR, "inc",
                        15 * rows[0] + 3 * rows[1] + 9 * rows[2] + 13 * rows[3]);
-  RegisterFunctionType(FunctionType::PREDECESSOR,
+  RegisterFunctionType(FunctionType::PREDECESSOR, "dec",
                        15 * rows[0] + 3 * rows[1] + 5 * rows[2] + 13 * rows[3]);
-  RegisterFunctionType(FunctionType::SUM, 15 * rows[0] + 11 * rows[1] +
-                                              11 * rows[2] + 11 * rows[3]);
-  RegisterFunctionType(FunctionType::PRODUCT,
+  RegisterFunctionType(
+      FunctionType::SUM, "add",
+      15 * rows[0] + 11 * rows[1] + 11 * rows[2] + 11 * rows[3]);
+  RegisterFunctionType(FunctionType::PRODUCT, "mul",
                        15 * rows[0] + 5 * rows[1] + 5 * rows[2] + 5 * rows[3]);
-  RegisterFunctionType(FunctionType::DIVISION,
+  RegisterFunctionType(FunctionType::DIVISION, "div",
                        15 * rows[0] + rows[1] + 11 * rows[2] + rows[3]);
-  RegisterFunctionType(FunctionType::EQUALITY,
+  RegisterFunctionType(FunctionType::EQUALITY, "eq",
                        15 * rows[0] + rows[1] + rows[2] + 15 * rows[3]);
-  RegisterFunctionType(FunctionType::STRICT_LESS,
+  RegisterFunctionType(FunctionType::STRICT_LESS, "lt",
                        15 * rows[0] + rows[1] + 9 * rows[2] + 13 * rows[3]);
-  RegisterFunctionType(FunctionType::MODULATE,
+  RegisterFunctionType(FunctionType::MODULATE, "mod",
                        15 * rows[0] + 5 * rows[1] + 11 * rows[2] + 5 * rows[3]);
   RegisterFunctionType(
-      FunctionType::DEMODULATE,
+      FunctionType::DEMODULATE, "dem",
       15 * rows[0] + 11 * rows[1] + 5 * rows[2] + 11 * rows[3]);
-  RegisterFunctionType(FunctionType::SEND, 15 * rows[0] + 13 * rows[1] +
-                                               11 * rows[2] + 9 * rows[3]);
-  RegisterFunctionType(FunctionType::NEGATE,
+  RegisterFunctionType(
+      FunctionType::SEND, "send",
+      15 * rows[0] + 13 * rows[1] + 11 * rows[2] + 9 * rows[3]);
+  RegisterFunctionType(FunctionType::NEGATE, "neg",
                        7 * rows[0] + 5 * rows[1] + 5 * rows[2]);
-  RegisterFunctionType(FunctionType::S_COMBINATOR,
+  RegisterFunctionType(FunctionType::S_COMBINATOR, "s",
                        7 * rows[0] + 7 * rows[1] + 3 * rows[2]);
-  RegisterFunctionType(FunctionType::C_COMBINATOR,
+  RegisterFunctionType(FunctionType::C_COMBINATOR, "c",
                        7 * rows[0] + 5 * rows[1] + 3 * rows[2]);
-  RegisterFunctionType(FunctionType::B_COMBINATOR,
+  RegisterFunctionType(FunctionType::B_COMBINATOR, "b",
                        7 * rows[0] + 3 * rows[1] + 3 * rows[2]);
-  RegisterFunctionType(FunctionType::K_COMBINATOR,
+  RegisterFunctionType(FunctionType::K_COMBINATOR, "t",
                        7 * rows[0] + 5 * rows[1] + 1 * rows[2]);
-  RegisterFunctionType(FunctionType::FALSE__SECOND,
+  RegisterFunctionType(FunctionType::FALSE__SECOND, "f",
                        7 * rows[0] + 1 * rows[1] + 5 * rows[2]);
-  RegisterFunctionType(FunctionType::POWER_OF_TWO,
+  RegisterFunctionType(FunctionType::POWER_OF_TWO, "pwr2",
                        127 * rows[0] + 65 * rows[1] + 89 * rows[2] +
                            85 * rows[3] + 69 * rows[4] + 65 * rows[5] +
                            127 * rows[6]);
-  RegisterFunctionType(FunctionType::I_COMBINATOR, 3 * rows[0] + 3 * rows[1]);
+  RegisterFunctionType(FunctionType::I_COMBINATOR, "i",
+                       3 * rows[0] + 3 * rows[1]);
   RegisterFunctionType(
-      FunctionType::CONS__PAIR,
+      FunctionType::CONS__PAIR, "cons",
       31 * rows[0] + 21 * rows[1] + 21 * rows[2] + 21 * rows[3] + 31 * rows[4]);
   RegisterFunctionType(
-      FunctionType::CAR__FIRST,
+      FunctionType::CAR__FIRST, "car",
       31 * rows[0] + 29 * rows[1] + 21 * rows[2] + 21 * rows[3] + 31 * rows[4]);
   RegisterFunctionType(
-      FunctionType::CDR__TAIL,
+      FunctionType::CDR__TAIL, "cdr",
       31 * rows[0] + 23 * rows[1] + 21 * rows[2] + 21 * rows[3] + 31 * rows[4]);
-  RegisterFunctionType(FunctionType::NIL__EMPTY_LIST,
+  RegisterFunctionType(FunctionType::NIL__EMPTY_LIST, "nil",
                        7 * rows[0] + 5 * rows[1] + 7 * rows[2]);
-  RegisterFunctionType(FunctionType::VECTOR, 63 * rows[0] + 3 * rows[1] +
-                                                 5 * rows[2] + 9 * rows[3] +
-                                                 17 * rows[4] + 33 * rows[5]);
+  RegisterFunctionType(FunctionType::VECTOR, "vec",
+                       63 * rows[0] + 3 * rows[1] + 5 * rows[2] + 9 * rows[3] +
+                           17 * rows[4] + 33 * rows[5]);
   RegisterFunctionType(
-      FunctionType::IF0,
+      FunctionType::IF0, "if0",
       31 * rows[0] + 1 * rows[1] + 29 * rows[2] + 7 * rows[3] + 29 * rows[4]);
 }
 
