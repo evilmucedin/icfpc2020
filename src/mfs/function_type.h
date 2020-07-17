@@ -22,5 +22,6 @@ enum class FunctionType {
   I_COMBINATOR = 24,
   CONS_PAIR = 25,
   CAR_FIRST = 26,
+  CDR_TAIL = 27,
   END
 };

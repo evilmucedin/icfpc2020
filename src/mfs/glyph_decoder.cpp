@@ -80,6 +80,9 @@ void GlyphDecoder::InitMap() {
   RegisterFunctionType(
       FunctionType::CAR_FIRST,
       31 * rows[0] + 29 * rows[1] + 21 * rows[2] + 21 * rows[3] + 31 * rows[4]);
+  RegisterFunctionType(
+      FunctionType::CDR_TAIL,
+      31 * rows[0] + 23 * rows[1] + 21 * rows[2] + 21 * rows[3] + 31 * rows[4]);
 }
 
 Glyph GlyphDecoder::Decode(const GlyphCompact& gc) const {

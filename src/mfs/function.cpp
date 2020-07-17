@@ -15,6 +15,7 @@ unsigned ExpectedParameters(FunctionType ftype) {
     case FunctionType::POWER_OF_TWO:
     case FunctionType::I_COMBINATOR:
     case FunctionType::CAR_FIRST:
+    case FunctionType::CDR_TAIL:
       return 1;
     case FunctionType::SUM:
     case FunctionType::PRODUCT:
@@ -67,6 +68,11 @@ Expression Apply(FunctionType ftype, Expression& e0) {
       e.Add(Glyph(GlyphType::OPERAND));
       e.Add(e0);
       e.Add(Glyph(FunctionType::K_COMBINATOR));
+      return e;
+    case FunctionType::CDR_TAIL:
+      e.Add(Glyph(GlyphType::OPERAND));
+      e.Add(e0);
+      e.Add(Glyph(FunctionType::FALSE_SECOND));
       return e;
     default:
       assert(false);
