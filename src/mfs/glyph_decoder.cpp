@@ -55,13 +55,13 @@ void GlyphDecoder::InitMap() {
   RegisterFunctionType(
       FunctionType::DEMODULATE,
       15 * rows[0] + 11 * rows[1] + 5 * rows[2] + 11 * rows[3]);
-  RegisterFunctionType(FunctionType::F15, 15 * rows[0] + 13 * rows[1] +
-                                              11 * rows[2] + 9 * rows[3]);
+  RegisterFunctionType(FunctionType::SEND, 15 * rows[0] + 13 * rows[1] +
+                                               11 * rows[2] + 9 * rows[3]);
   RegisterFunctionType(FunctionType::NEGATE,
                        7 * rows[0] + 5 * rows[1] + 5 * rows[2]);
   RegisterFunctionType(FunctionType::S_COMBINATOR,
                        7 * rows[0] + 7 * rows[1] + 3 * rows[2]);
-  RegisterFunctionType(FunctionType::F19,
+  RegisterFunctionType(FunctionType::C_COMBINATOR,
                        7 * rows[0] + 5 * rows[1] + 3 * rows[2]);
   RegisterFunctionType(FunctionType::B_COMBINATOR,
                        7 * rows[0] + 3 * rows[1] + 3 * rows[2]);
