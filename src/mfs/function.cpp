@@ -14,7 +14,7 @@ unsigned ExpectedParameters(FunctionType ftype) {
     case FunctionType::NEGATE:
     case FunctionType::POWER_OF_TWO:
     case FunctionType::I_COMBINATOR:
-    case FunctionType::CAR:
+    case FunctionType::CAR_FIRST:
       return 1;
     case FunctionType::SUM:
     case FunctionType::PRODUCT:
@@ -27,7 +27,7 @@ unsigned ExpectedParameters(FunctionType ftype) {
     case FunctionType::S_COMBINATOR:
     case FunctionType::C_COMBINATOR:
     case FunctionType::B_COMBINATOR:
-    case FunctionType::CONS:
+    case FunctionType::CONS_PAIR:
       return 3;
     default:
       return unsigned(-1);
@@ -63,7 +63,7 @@ Expression Apply(FunctionType ftype, Expression& e0) {
       return {};
     case FunctionType::I_COMBINATOR:
       return e0;
-    case FunctionType::CAR:
+    case FunctionType::CAR_FIRST:
       e.Add(Glyph(GlyphType::OPERAND));
       e.Add(e0);
       e.Add(Glyph(FunctionType::K_COMBINATOR));
@@ -140,7 +140,7 @@ Expression Apply(FunctionType ftype, Expression& e0, Expression& e1,
       e.Add(e1);
       e.Add(e2);
       return e;
-    case FunctionType::CONS:
+    case FunctionType::CONS_PAIR:
       e.Add(Glyph(GlyphType::OPERAND));
       e.Add(Glyph(GlyphType::OPERAND));
       e.Add(e2);

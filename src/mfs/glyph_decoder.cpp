@@ -75,10 +75,10 @@ void GlyphDecoder::InitMap() {
                            127 * rows[6]);
   RegisterFunctionType(FunctionType::I_COMBINATOR, 3 * rows[0] + 3 * rows[1]);
   RegisterFunctionType(
-      FunctionType::CONS,
+      FunctionType::CONS_PAIR,
       31 * rows[0] + 21 * rows[1] + 21 * rows[2] + 21 * rows[3] + 31 * rows[4]);
   RegisterFunctionType(
-      FunctionType::CAR,
+      FunctionType::CAR_FIRST,
       31 * rows[0] + 29 * rows[1] + 21 * rows[2] + 21 * rows[3] + 31 * rows[4]);
 }
 
