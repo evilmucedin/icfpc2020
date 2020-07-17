@@ -22,7 +22,7 @@ void PNGExample(const std::string& filename) {
 }
 
 int main() {
-  PNGExample("../src/mfs/messages/message8.png");
+  PNGExample("../src/mfs/messages/message12.png");
   //   GlyphDecoder gd = GlyphDecoder::GetDecoder();
   //   for (int64_t i = 0; i < 30; ++i) {
   //     auto ei = gd.Encode(Glyph(GlyphType::VARIABLE, i));
