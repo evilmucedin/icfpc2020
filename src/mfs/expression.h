@@ -16,6 +16,8 @@ class Expression {
 
   bool IsNumber() const;
   int64_t GetNumber() const;
+  bool IsLEF() const;
+  LEF GetLEF() const;
 
   void Add(const Glyph& g);
   void Add(const Expression& e);

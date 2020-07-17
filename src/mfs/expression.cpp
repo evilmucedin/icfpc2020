@@ -32,6 +32,15 @@ int64_t Expression::GetNumber() const {
   return v[0].value;
 }
 
+bool Expression::IsLEF() const {
+  return (v.size() == 1) && (v[0].type == GlyphType::LINEAR_ENCODED_FORM);
+}
+
+LEF Expression::GetLEF() const {
+  assert(IsLEF());
+  return v[0].lef;
+}
+
 void Expression::Print() const {
   std::cout << "[";
   for (auto& g : v) {
