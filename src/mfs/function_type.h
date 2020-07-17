@@ -23,5 +23,6 @@ enum class FunctionType {
   CONS__PAIR = 25,
   CAR__FIRST = 26,
   CDR__TAIL = 27,
+  NIL__EMPTY_LIST = 28,
   END
 };
