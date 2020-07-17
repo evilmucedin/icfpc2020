@@ -18,7 +18,9 @@ bool VerifyPixel(const PNGWrapper& f, unsigned scale, unsigned i, unsigned j,
                  bool value) {
   for (unsigned k = i * scale; k < (i + 1) * scale; ++k) {
     for (unsigned l = j * scale; l < (j + 1) * scale; ++l) {
-      if (f.get(0, k, l) != (value ? 255 : 0)) return false;
+      if ((f.get(0, k, l) != (value ? 255 : 0)) &&
+          (f.get(0, k, l) != (value ? 192 : 0)))
+        return false;
     }
   }
   return true;
@@ -88,6 +90,21 @@ void MessageAsImage::Print() const {
   for (unsigned i = 0; i < m.Rows(); ++i) {
     for (unsigned j = 0; j < m.Columns(); ++j)
       std::cout << (m.Get(i, j) ? 1 : 0);
+    std::cout << std::endl;
+  }
+}
+
+void MessageAsImage::PrintPNG(const std::string& png_file_name) {
+  PNGWrapper f(png_file_name);
+  std::cout << f.getChannels() << "\t" << f.getHeight() << "\t" << f.getWidth()
+            << std::endl;
+  for (unsigned d = 0; d < f.getChannels(); ++d) {
+    for (unsigned h = 0; h < f.getHeight(); ++h) {
+      for (unsigned w = 0; w < f.getWidth(); ++w) {
+        std::cout << unsigned(f.get(d, h, w)) << " ";
+      }
+      std::cout << std::endl;
+    }
     std::cout << std::endl;
   }
 }
