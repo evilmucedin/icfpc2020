@@ -53,6 +53,9 @@ void Glyph::Print() const {
     case GlyphType::LINEAR_ENCODED_FORM:
       std::cout << "L" << LEFDecodeNumber(lef);
       break;
+    case GlyphType::ALIAS:
+      std::cout << "A" << value;
+      break;
     default:
       std::cout << "UNKNOWN";
       break;

@@ -34,12 +34,24 @@ void ReadText(const std::string& filename) {
   m.Print();
 }
 
+void ProcessGalaxy(const std::string& filename) {
+  MessageAsText mt(filename);
+  MessageDecoder md(GlyphDecoder::GetDecoder());
+  Message m = md.Decode(mt);
+  cout << m.v.size() << endl;
+  m.Process();
+}
+
 int main(int argc, char* argv[]) {
   string s = "1";
-  if (argc >= 2) s = argv[1];
-  //   ReadPNG("../src/mfs/messages/message" + s + ".png");
-  //   cout << endl;
-  ReadText("../src/mfs/messages/message" + s + "-decoded.txt");
+  if (argc >= 2) {
+    s = argv[1];
+    // ReadPNG("../src/mfs/messages/message" + s + ".png");
+    // cout << endl;
+    ReadText("../src/mfs/messages/message" + s + "-decoded.txt");
+  } else {
+    ProcessGalaxy("../src/mfs/messages/galaxy.txt");
+  }
   // GlyphDecoder gd = GlyphDecoder::GetDecoder();
   //   for (int64_t i = -10; i < 30; ++i) {
   // auto ei = gd.Encode(Glyph(GlyphType::VARIABLE, i));
