@@ -67,7 +67,7 @@ void GlyphDecoder::InitMap() {
                        7 * rows[0] + 3 * rows[1] + 3 * rows[2]);
   RegisterFunctionType(FunctionType::K_COMBINATOR,
                        7 * rows[0] + 5 * rows[1] + 1 * rows[2]);
-  RegisterFunctionType(FunctionType::FALSE_SECOND,
+  RegisterFunctionType(FunctionType::FALSE__SECOND,
                        7 * rows[0] + 1 * rows[1] + 5 * rows[2]);
   RegisterFunctionType(FunctionType::POWER_OF_TWO,
                        127 * rows[0] + 65 * rows[1] + 89 * rows[2] +
@@ -75,13 +75,13 @@ void GlyphDecoder::InitMap() {
                            127 * rows[6]);
   RegisterFunctionType(FunctionType::I_COMBINATOR, 3 * rows[0] + 3 * rows[1]);
   RegisterFunctionType(
-      FunctionType::CONS_PAIR,
+      FunctionType::CONS__PAIR,
       31 * rows[0] + 21 * rows[1] + 21 * rows[2] + 21 * rows[3] + 31 * rows[4]);
   RegisterFunctionType(
-      FunctionType::CAR_FIRST,
+      FunctionType::CAR__FIRST,
       31 * rows[0] + 29 * rows[1] + 21 * rows[2] + 21 * rows[3] + 31 * rows[4]);
   RegisterFunctionType(
-      FunctionType::CDR_TAIL,
+      FunctionType::CDR__TAIL,
       31 * rows[0] + 23 * rows[1] + 21 * rows[2] + 21 * rows[3] + 31 * rows[4]);
 }
 

@@ -14,8 +14,8 @@ unsigned ExpectedParameters(FunctionType ftype) {
     case FunctionType::NEGATE:
     case FunctionType::POWER_OF_TWO:
     case FunctionType::I_COMBINATOR:
-    case FunctionType::CAR_FIRST:
-    case FunctionType::CDR_TAIL:
+    case FunctionType::CAR__FIRST:
+    case FunctionType::CDR__TAIL:
       return 1;
     case FunctionType::SUM:
     case FunctionType::PRODUCT:
@@ -23,12 +23,12 @@ unsigned ExpectedParameters(FunctionType ftype) {
     case FunctionType::EQUALITY:
     case FunctionType::STRICT_LESS:
     case FunctionType::K_COMBINATOR:
-    case FunctionType::FALSE_SECOND:
+    case FunctionType::FALSE__SECOND:
       return 2;
     case FunctionType::S_COMBINATOR:
     case FunctionType::C_COMBINATOR:
     case FunctionType::B_COMBINATOR:
-    case FunctionType::CONS_PAIR:
+    case FunctionType::CONS__PAIR:
       return 3;
     default:
       return unsigned(-1);
@@ -64,15 +64,15 @@ Expression Apply(FunctionType ftype, Expression& e0) {
       return {};
     case FunctionType::I_COMBINATOR:
       return e0;
-    case FunctionType::CAR_FIRST:
+    case FunctionType::CAR__FIRST:
       e.Add(Glyph(GlyphType::OPERAND));
       e.Add(e0);
       e.Add(Glyph(FunctionType::K_COMBINATOR));
       return e;
-    case FunctionType::CDR_TAIL:
+    case FunctionType::CDR__TAIL:
       e.Add(Glyph(GlyphType::OPERAND));
       e.Add(e0);
-      e.Add(Glyph(FunctionType::FALSE_SECOND));
+      e.Add(Glyph(FunctionType::FALSE__SECOND));
       return e;
     default:
       assert(false);
@@ -99,18 +99,18 @@ Expression Apply(FunctionType ftype, Expression& e0, Expression& e1) {
       if (e0.IsNumber() && e1.IsNumber())
         return Expression(Glyph((e0.GetNumber() == e1.GetNumber())
                                     ? FunctionType::K_COMBINATOR
-                                    : FunctionType::FALSE_SECOND));
+                                    : FunctionType::FALSE__SECOND));
       return (e0 == e1) ? Expression(Glyph(FunctionType::K_COMBINATOR))
                         : Expression();
     case FunctionType::STRICT_LESS:
       return (e0.IsNumber() && e1.IsNumber())
                  ? Expression(Glyph((e0.GetNumber() < e1.GetNumber())
                                         ? FunctionType::K_COMBINATOR
-                                        : FunctionType::FALSE_SECOND))
+                                        : FunctionType::FALSE__SECOND))
                  : Expression();
     case FunctionType::K_COMBINATOR:
       return e0;
-    case FunctionType::FALSE_SECOND:
+    case FunctionType::FALSE__SECOND:
       return e0;
     default:
       assert(false);
@@ -146,7 +146,7 @@ Expression Apply(FunctionType ftype, Expression& e0, Expression& e1,
       e.Add(e1);
       e.Add(e2);
       return e;
-    case FunctionType::CONS_PAIR:
+    case FunctionType::CONS__PAIR:
       e.Add(Glyph(GlyphType::OPERAND));
       e.Add(Glyph(GlyphType::OPERAND));
       e.Add(e2);
