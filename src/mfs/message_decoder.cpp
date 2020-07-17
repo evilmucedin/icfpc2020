@@ -57,6 +57,7 @@ Message MessageDecoder::Decode(const MessageAsImage& mi) {
       if (ms.IsRowEmpty(re) && ms.IsRowEmpty(re + 1)) break;
     }
     m.v.push_back(DecodeLine(TMatrixSlice(ms, rb, re)));
+    if ((re == rb + 2) && ms.IsRowEmpty(rb)) ++re;
     rb = re + 2;
   }
   return m;

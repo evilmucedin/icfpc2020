@@ -22,6 +22,6 @@ void PNGExample(const std::string& filename) {
 }
 
 int main() {
-  PNGExample("../src/mfs/messages/message1.png");
+  PNGExample("../src/mfs/messages/message4.png");
   return 0;
 }
