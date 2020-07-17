@@ -16,5 +16,7 @@ class Glyph {
   Glyph(FunctionType _ftype);
   Glyph(GlyphType _type, int64_t _value);
 
+  bool operator==(const Glyph& g) const;
+
   void Print() const;
 };

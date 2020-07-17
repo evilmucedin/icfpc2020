@@ -16,6 +16,10 @@ Glyph::Glyph(FunctionType _ftype)
 Glyph::Glyph(GlyphType _type, int64_t _value)
     : type(_type), ftype(FunctionType::NONE), value(_value) {}
 
+bool Glyph::operator==(const Glyph& g) const {
+  return (type == g.type) && (ftype == g.ftype) && (value == g.value);
+}
+
 void Glyph::Print() const {
   switch (type) {
     case GlyphType::NUMBER:
