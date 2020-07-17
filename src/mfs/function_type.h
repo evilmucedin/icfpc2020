@@ -12,5 +12,6 @@ enum class FunctionType {
   MODULATE,
   DEMODULATE,
   NEGATE,
+  S_COMBINATOR,
   END
 };
