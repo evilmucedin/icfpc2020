@@ -8,8 +8,11 @@
 #include "matrix_slice.h"
 #include "message.h"
 #include "message_as_image.h"
+#include "message_as_text.h"
 
 #include "common/linear_algebra/matrix.h"
+
+#include <string>
 
 class MessageDecoder {
  protected:
@@ -26,6 +29,10 @@ class MessageDecoder {
   Glyph DecodeGlyph(const TMatrixSlice& ms);
   Expression DecodeExpression(const TMatrixSlice& ms);
   Line DecodeLine(const TMatrixSlice& s);
-
   Message Decode(const MessageAsImage& mi);
+
+  Glyph DecodeGlyph(const std::string& s);
+  Expression DecodeExpression(const std::string& s);
+  Line DecodeLine(const std::string& s);
+  Message Decode(const MessageAsText& mt);
 };

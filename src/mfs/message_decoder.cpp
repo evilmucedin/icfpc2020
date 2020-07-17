@@ -2,6 +2,7 @@
 
 #include "common/base.h"
 #include "common/linear_algebra/bool/vector.h"
+#include "common/string/utils/split.h"
 
 MessageDecoder::MessageDecoder(GlyphDecoder& _gd) : gd(_gd) {}
 
@@ -81,5 +82,33 @@ Message MessageDecoder::Decode(const MessageAsImage& mi) {
     if ((re == rb + 2) && ms.IsRowEmpty(rb)) ++re;
     rb = re + 2;
   }
+  return m;
+}
+
+Glyph MessageDecoder::DecodeGlyph(const std::string& s) { return gd.Decode(s); }
+
+Expression MessageDecoder::DecodeExpression(const std::string& s) {
+  Expression e;
+  auto vs = Split(s, ' ');
+  for (auto& g : vs) e.v.push_back(DecodeGlyph(g));
+  return e;
+}
+
+Line MessageDecoder::DecodeLine(const std::string& s) {
+  Line l;
+  size_t npos0 = 0, npos;
+  for (npos = s.find("  ", npos0); npos != std::string::npos;
+       npos = s.find("  ", npos0)) {
+    l.v.push_back(DecodeExpression(s.substr(npos0, npos - npos0)));
+    npos0 = npos;
+    for (; (npos0 < s.size()) && (s[npos0] == ' ');) ++npos0;
+  }
+  if (npos0 < s.size()) l.v.push_back(DecodeExpression(s.substr(npos0)));
+  return l;
+}
+
+Message MessageDecoder::Decode(const MessageAsText& mt) {
+  Message m;
+  for (auto& l : mt.m) m.v.push_back(DecodeLine(l));
   return m;
 }
