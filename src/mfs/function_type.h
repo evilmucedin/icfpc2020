@@ -11,6 +11,6 @@ enum class FunctionType {
   STRICT_LESS,
   MODULATE,
   DEMODULATE,
-  UNARY_MINUS,
+  NEGATE,
   END
 };
