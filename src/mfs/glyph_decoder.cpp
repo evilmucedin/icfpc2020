@@ -53,10 +53,10 @@ void GlyphDecoder::InitMap() {
   RegisterFunctionType(FunctionType::STRICT_LESS,
                        15 * rows[0] + rows[1] + 9 * rows[2] + 13 * rows[3]);
   RegisterFunctionType(FunctionType::GRID_TO_LINEAR,
-                       15 * rows[0] + 9 * rows[1] + 11 * rows[2] + 9 * rows[3]);
+                       15 * rows[0] + 5 * rows[1] + 11 * rows[2] + 5 * rows[3]);
   RegisterFunctionType(
       FunctionType::LINEAR_TO_GRID,
-      15 * rows[0] + 11 * rows[1] + 9 * rows[2] + 11 * rows[3]);
+      15 * rows[0] + 11 * rows[1] + 5 * rows[2] + 11 * rows[3]);
 }
 
 Glyph GlyphDecoder::Decode(const GlyphCompact& gc) const {
