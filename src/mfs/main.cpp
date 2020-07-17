@@ -29,13 +29,16 @@ void ReadText(const std::string& filename) {
   MessageDecoder md(GlyphDecoder::GetDecoder());
   Message m = md.Decode(mt);
   m.Print();
+  cout << endl;
+  m.Compress();
+  m.Print();
 }
 
 int main(int argc, char* argv[]) {
   string s = "1";
   if (argc >= 2) s = argv[1];
-  ReadPNG("../src/mfs/messages/message" + s + ".png");
-  cout << endl;
+  //   ReadPNG("../src/mfs/messages/message" + s + ".png");
+  //   cout << endl;
   ReadText("../src/mfs/messages/message" + s + "-decoded.txt");
   // GlyphDecoder gd = GlyphDecoder::GetDecoder();
   //   for (int64_t i = -10; i < 30; ++i) {

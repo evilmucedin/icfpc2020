@@ -2,6 +2,10 @@
 
 #include <iostream>
 
+void Line::Compress() {
+  for (auto& e : v) e.Compress();
+}
+
 void Line::Print() const {
   for (auto& e : v) {
     e.Print();

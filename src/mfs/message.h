@@ -8,5 +8,6 @@ class Message {
  public:
   std::vector<Line> v;
 
+  void Compress();
   void Print() const;
 };

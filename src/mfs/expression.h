@@ -12,6 +12,7 @@ class Expression {
   explicit Expression(const Glyph& g);
   explicit Expression(int64_t value);
 
+  bool Empty() const;
   bool operator==(const Expression& r) const;
 
   bool IsNumber() const;
@@ -22,6 +23,9 @@ class Expression {
 
   void Add(const Glyph& g);
   void Add(const Expression& e);
+
+  Expression GetOne(unsigned index, unsigned count = 1);
+  void Compress();
 
   void Print() const;
 };
