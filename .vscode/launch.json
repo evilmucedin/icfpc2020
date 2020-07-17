@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/debug/build/mfs",
             "args": [
-                "23"
+                // "42"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/debug/",

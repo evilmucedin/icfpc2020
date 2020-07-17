@@ -24,7 +24,6 @@ void GlyphDecoder::RegisterGlyphType(GlyphType type, const std::string& id,
 
 void GlyphDecoder::RegisterFunctionType(FunctionType type,
                                         const std::string& id, uint64_t mask) {
-  Assert(mask & 1);
   Assert(map_mask_function_type.find(mask) == map_mask_function_type.end());
   Assert(map_function_type_mask.find(type) == map_function_type_mask.end());
   Assert(map_id_function_type.find(id) == map_id_function_type.end());
@@ -103,11 +102,15 @@ void GlyphDecoder::InitMap() {
   RegisterFunctionType(
       FunctionType::IF0, "if0",
       31 * rows[0] + 1 * rows[1] + 29 * rows[2] + 7 * rows[3] + 29 * rows[4]);
+  RegisterFunctionType(FunctionType::GALAXY, "galaxy",
+                       28 * rows[0] + 32 * rows[1] + 78 * rows[2] +
+                           85 * rows[3] + 57 * rows[4] + 2 * rows[5] +
+                           28 * rows[6]);
 }
 
 Glyph GlyphDecoder::Decode(const GlyphCompact& gc) const {
   if (gc.mask == MASK_DOT) return {GlyphType::DOT};
-  if (!(gc.mask & 1)) return {GlyphType::NUMBER, DecodeNumber(gc.mask)};
+  if ((gc.mask & 131) == 130) return {GlyphType::NUMBER, DecodeNumber(gc.mask)};
   auto itf = map_mask_function_type.find(gc.mask);
   if (itf != map_mask_function_type.end()) return {itf->second};
   auto itg = map_mask_glyph_type.find(gc.mask);
@@ -213,6 +216,7 @@ Glyph GlyphDecoder::Decode(const std::string& name) {
     assert(name.back() == ']');
     return {LEFEncodeNumber(std::stoll(name.substr(1, name.size() - 2)))};
   }
+  if (name[0] == ':') return {GlyphType::ALIAS, std::stoll(name.substr(1))};
   return {GlyphType::NUMBER, std::stoll(name)};
 }
 

@@ -27,5 +27,6 @@ enum class FunctionType {
   IS_NIL = 29,
   VECTOR = 31,
   IF0 = 37,
+  GALAXY = 42,
   END
 };
