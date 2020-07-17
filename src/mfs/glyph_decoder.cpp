@@ -57,7 +57,7 @@ void GlyphDecoder::InitMap() {
   RegisterFunctionType(
       FunctionType::DEMODULATE,
       15 * rows[0] + 11 * rows[1] + 5 * rows[2] + 11 * rows[3]);
-  RegisterFunctionType(FunctionType::UNARY_MINUS,
+  RegisterFunctionType(FunctionType::NEGATE,
                        7 * rows[0] + 5 * rows[1] + 5 * rows[2]);
 }
 
