@@ -31,6 +31,7 @@ unsigned ExpectedParameters(FunctionType ftype) {
     case FunctionType::B_COMBINATOR:
     case FunctionType::CONS__PAIR:
     case FunctionType::VECTOR:
+    case FunctionType::IF0:
       return 3;
     default:
       return unsigned(-1);
@@ -158,6 +159,8 @@ Expression Apply(FunctionType ftype, Expression& e0, Expression& e1,
       e.Add(e0);
       e.Add(e1);
       return e;
+    case FunctionType::IF0:
+      return e0.IsNumber() ? (e0.GetNumber() ? e2 : e1) : Expression();
     default:
       assert(false);
   }

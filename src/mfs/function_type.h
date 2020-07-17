@@ -25,5 +25,6 @@ enum class FunctionType {
   CDR__TAIL = 27,
   NIL__EMPTY_LIST = 28,
   VECTOR = 31,
+  IF0 = 37,
   END
 };
