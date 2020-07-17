@@ -4,6 +4,7 @@
 #include "linear_encoded_form.h"
 
 #include "common/base.h"
+#include "common/template.h"
 
 unsigned ExpectedParameters(FunctionType ftype) {
   switch (ftype) {
@@ -39,7 +40,8 @@ unsigned ExpectedParameters(FunctionType ftype) {
   }
 }
 
-Expression Apply(FunctionType /*ftype*/) {
+Expression Apply(FunctionType ftype) {
+  FakeUse(ftype);
   assert(ExpectedParameters(ftype) == 0);
   assert(false);
   return {};
