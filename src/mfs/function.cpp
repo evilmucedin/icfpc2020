@@ -1,6 +1,7 @@
 #include "function.h"
 
 #include "function_type.h"
+#include "linear_encoded_form.h"
 
 #include "common/base.h"
 
@@ -53,7 +54,15 @@ Expression Apply(FunctionType ftype, Expression& e0) {
     case FunctionType::PREDECESSOR:
       return e0.IsNumber() ? Expression(e0.GetNumber() - 1) : Expression();
     case FunctionType::MODULATE:
+      if (e0.IsNumber()) {
+        return Expression(Glyph(LEFEncodeNumber(e0.GetNumber())));
+      }
+      return {};
     case FunctionType::DEMODULATE:
+      if (e0.IsLEF()) {
+        return Expression(LEFDecodeNumber(e0.GetLEF()));
+      }
+      return {};
     case FunctionType::SEND:
       return {};
     case FunctionType::NEGATE:
