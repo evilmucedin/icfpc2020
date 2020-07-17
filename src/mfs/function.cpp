@@ -39,7 +39,7 @@ unsigned ExpectedParameters(FunctionType ftype) {
   }
 }
 
-Expression Apply(FunctionType ftype) {
+Expression Apply(FunctionType /*ftype*/) {
   assert(ExpectedParameters(ftype) == 0);
   assert(false);
   return {};
