@@ -30,6 +30,7 @@ unsigned ExpectedParameters(FunctionType ftype) {
     case FunctionType::C_COMBINATOR:
     case FunctionType::B_COMBINATOR:
     case FunctionType::CONS__PAIR:
+    case FunctionType::VECTOR:
       return 3;
     default:
       return unsigned(-1);
@@ -150,6 +151,7 @@ Expression Apply(FunctionType ftype, Expression& e0, Expression& e1,
       e.Add(e2);
       return e;
     case FunctionType::CONS__PAIR:
+    case FunctionType::VECTOR:
       e.Add(Glyph(GlyphType::OPERAND));
       e.Add(Glyph(GlyphType::OPERAND));
       e.Add(e2);
