@@ -40,5 +40,7 @@ class GlyphDecoder {
   int64_t DecodeVariable(uint64_t mask) const;
   uint64_t EncodeVariable(int64_t value) const;
 
+  Glyph Decode(const std::string& name);
+
   static GlyphDecoder& GetDecoder();
 };

@@ -39,7 +39,7 @@ void GlyphDecoder::InitMap() {
   rows.resize(8, 1);
   for (unsigned i = 1; i < 8; ++i) rows[i] = (rows[i - 1] << 8);
   RegisterGlyphType(GlyphType::ONE, "X", rows[0] + rows[1]);
-  RegisterGlyphType(GlyphType::DOT, ".", MASK_DOT);
+  RegisterGlyphType(GlyphType::DOT, "...", MASK_DOT);
   RegisterGlyphType(GlyphType::EQUALITY, "=",
                     7 * rows[0] + rows[1] + 7 * rows[2]);
   RegisterGlyphType(GlyphType::OPERAND, "ap", 3 * rows[0] + rows[1]);
@@ -200,6 +200,20 @@ uint64_t GlyphDecoder::EncodeVariable(int64_t value) const {
   uint64_t mask = EncodeNumber(value) << 9;
   for (unsigned j = 0; j < i; ++j) mask ^= ((1ull << i) - 1) << (8 * j);
   return mask;
+}
+
+Glyph GlyphDecoder::Decode(const std::string& name) {
+  assert(name.size() > 0);
+  auto itf = map_id_function_type.find(name);
+  if (itf != map_id_function_type.end()) return {itf->second};
+  auto itg = map_id_glyph_type.find(name);
+  if (itg != map_id_glyph_type.end()) return {itg->second};
+  if (name[0] == 'x') return {GlyphType::VARIABLE, std::stoll(name.substr(1))};
+  if (name[0] == '[') {
+    assert(name.back() == ']');
+    return {LEFEncodeNumber(std::stoll(name.substr(1, name.size() - 2)))};
+  }
+  return {GlyphType::NUMBER, std::stoll(name)};
 }
 
 GlyphDecoder& GlyphDecoder::GetDecoder() { return gd; }

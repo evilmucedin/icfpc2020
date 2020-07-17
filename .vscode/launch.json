@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/debug/build/mfs",
             "args": [
-                // "binary_search_tree"
+                "29"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/debug/",
