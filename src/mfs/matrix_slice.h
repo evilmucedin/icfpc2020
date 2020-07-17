@@ -3,29 +3,29 @@
 template <class TMatrix>
 class MatrixSlice {
  protected:
-  TMatrix& m;
+  const TMatrix& m;
   unsigned rb, re, cb, ce;
 
  public:
   using TValue = typename TMatrix::TValue;
 
-  MatrixSlice(TMatrix& _m)
+  MatrixSlice(const TMatrix& _m)
       : m(_m), rb(0), re(m.Rows()), cb(0), ce(m.Columns()) {}
 
-  MatrixSlice(TMatrix& _m, unsigned _rb, unsigned _re)
+  MatrixSlice(const TMatrix& _m, unsigned _rb, unsigned _re)
       : m(_m), rb(_rb), re(_re), cb(0), ce(m.Columns()) {}
 
-  MatrixSlice(TMatrix& _m, unsigned _rb, unsigned _re, unsigned _cb,
+  MatrixSlice(const TMatrix& _m, unsigned _rb, unsigned _re, unsigned _cb,
               unsigned _ce)
       : m(_m), rb(_rb), re(_re), cb(_cb), ce(_ce) {}
 
-  MatrixSlice(MatrixSlice& ms)
+  MatrixSlice(const MatrixSlice& ms)
       : m(ms.m), rb(ms.rb), re(ms.re), cb(ms.cb), ce(ms.ce) {}
 
-  MatrixSlice(MatrixSlice& ms, unsigned _rb, unsigned _re)
+  MatrixSlice(const MatrixSlice& ms, unsigned _rb, unsigned _re)
       : m(ms.m), rb(ms.rb + _rb), re(ms.rb + _re), cb(ms.cb), ce(ms.ce) {}
 
-  MatrixSlice(MatrixSlice& ms, unsigned _rb, unsigned _re, unsigned _cb,
+  MatrixSlice(const MatrixSlice& ms, unsigned _rb, unsigned _re, unsigned _cb,
               unsigned _ce)
       : m(ms.m),
         rb(ms.rb + _rb),

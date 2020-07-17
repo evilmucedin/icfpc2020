@@ -21,8 +21,11 @@ void Glyph::Print() const {
     case GlyphType::NUMBER:
       std::cout << value;
       break;
-    case GlyphType::DOTS:
-      std::cout << "....";
+    case GlyphType::ONE:
+      std::cout << "I";
+      break;
+    case GlyphType::DOT:
+      std::cout << ".";
       break;
     case GlyphType::EQUALITY:
       std::cout << "===";

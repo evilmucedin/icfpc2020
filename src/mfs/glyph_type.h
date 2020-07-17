@@ -2,7 +2,8 @@
 
 enum class GlyphType {
   NUMBER = 0,
-  DOTS,
+  ONE,
+  DOT,
   EQUALITY,
   OPERAND,
   FUNCTION,
