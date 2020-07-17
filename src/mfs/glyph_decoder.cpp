@@ -49,10 +49,11 @@ void GlyphDecoder::InitMap() {
                        15 * rows[0] + rows[1] + 11 * rows[2] + rows[3]);
   RegisterFunctionType(FunctionType::EQUALITY,
                        15 * rows[0] + rows[1] + rows[2] + 15 * rows[3]);
-  RegisterFunctionType(FunctionType::F170,
+  RegisterFunctionType(FunctionType::GRID_TO_LINEAR,
                        15 * rows[0] + 9 * rows[1] + 11 * rows[2] + 9 * rows[3]);
-  RegisterFunctionType(FunctionType::F341, 15 * rows[0] + 11 * rows[1] +
-                                               9 * rows[2] + 11 * rows[3]);
+  RegisterFunctionType(
+      FunctionType::LINEAR_TO_GRID,
+      15 * rows[0] + 11 * rows[1] + 9 * rows[2] + 11 * rows[3]);
 }
 
 Glyph GlyphDecoder::Decode(const GlyphCompact& gc) const {
