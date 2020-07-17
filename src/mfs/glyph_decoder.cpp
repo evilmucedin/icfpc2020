@@ -66,7 +66,8 @@ Glyph GlyphDecoder::Decode(const GlyphCompact& gc) const {
   if (itg != map_mask_glyph_type.end()) return {itg->second};
   if (gc.mask == MASK_BOOLEAN_FALSE) return {GlyphType::BOOLEAN, 0};
   if (gc.mask == MASK_BOOLEAN_TRUE) return {GlyphType::BOOLEAN, 1};
-  // Check if variable
+  if (IsVariable(gc.mask))
+    return {GlyphType::VARIABLE, DecodeVariable(gc.mask)};
   return {};
 }
 
@@ -121,14 +122,40 @@ uint64_t GlyphDecoder::EncodeNumber(int64_t value) const {
   return r;
 }
 
-int64_t GlyphDecoder::DecodeVariable(uint64_t) const {
-  assert(false);
-  return 0;
+// Current version support only positive indexes for variables
+bool GlyphDecoder::IsVariable(uint64_t mask) const {
+  unsigned i = 4;
+  for (; i < 8; ++i) {
+    if ((mask & (1ull << i)) == 0) break;
+  }
+  uint64_t a = (1ull << i) - 1, b = a + (a << (8 * (i - 1))),
+           c = 1 + (1ull << (i - 1));
+  if ((mask & b) != b) return false;
+  for (unsigned j = 1; j < i - 1; ++j) {
+    if (((mask >> (8 * j)) & c) != c) return false;
+  }
+  return true;
 }
 
-uint64_t GlyphDecoder::EncodeVariable(int64_t) const {
-  assert(false);
-  return 0;
+int64_t GlyphDecoder::DecodeVariable(uint64_t mask) const {
+  unsigned i = 4;
+  for (; i < 8; ++i) {
+    if ((mask & (1ull << i)) == 0) break;
+  }
+  for (unsigned j = 0; j < i; ++j) mask ^= ((1ull << i) - 1) << (8 * j);
+  return DecodeNumber(mask >> 9);
+}
+
+uint64_t GlyphDecoder::EncodeVariable(int64_t value) const {
+  assert(value >= 0);
+  unsigned i = 1;
+  for (; i < 7; ++i) {
+    if (value < (1ull << (i * i))) break;
+  }
+  i += 3;
+  uint64_t mask = EncodeNumber(value) << 9;
+  for (unsigned j = 0; j < i; ++j) mask ^= ((1ull << i) - 1) << (8 * j);
+  return mask;
 }
 
 GlyphDecoder& GlyphDecoder::GetDecoder() { return gd; }
