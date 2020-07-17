@@ -39,9 +39,6 @@ void Glyph::Print() const {
     case GlyphType::VARIABLE:
       std::cout << "V" << value;
       break;
-    case GlyphType::BOOLEAN:
-      std::cout << (value ? "TRUE" : "FALSE");
-      break;
     default:
       std::cout << "UNKNOWN";
       break;

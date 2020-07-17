@@ -7,8 +7,6 @@
 
 namespace {
 uint64_t MASK_DOT = 1 << 8;
-uint64_t MASK_BOOLEAN_FALSE = 7 + (1 << 8) + (5 << 16);
-uint64_t MASK_BOOLEAN_TRUE = 7 + (5 << 8) + (1 << 16);
 
 GlyphDecoder gd;
 }  // namespace
@@ -65,8 +63,12 @@ void GlyphDecoder::InitMap() {
                        7 * rows[0] + 7 * rows[1] + 3 * rows[2]);
   RegisterFunctionType(FunctionType::F19,
                        7 * rows[0] + 5 * rows[1] + 3 * rows[2]);
-  RegisterFunctionType(FunctionType::F20,
+  RegisterFunctionType(FunctionType::B_COMBINATOR,
                        7 * rows[0] + 3 * rows[1] + 3 * rows[2]);
+  RegisterFunctionType(FunctionType::K_COMBINATOR,
+                       7 * rows[0] + 5 * rows[1] + 1 * rows[2]);
+  RegisterFunctionType(FunctionType::FALSE_SECOND,
+                       7 * rows[0] + 1 * rows[1] + 5 * rows[2]);
 }
 
 Glyph GlyphDecoder::Decode(const GlyphCompact& gc) const {
@@ -76,8 +78,6 @@ Glyph GlyphDecoder::Decode(const GlyphCompact& gc) const {
   if (itf != map_mask_function_type.end()) return {itf->second};
   auto itg = map_mask_glyph_type.find(gc.mask);
   if (itg != map_mask_glyph_type.end()) return {itg->second};
-  if (gc.mask == MASK_BOOLEAN_FALSE) return {GlyphType::BOOLEAN, 0};
-  if (gc.mask == MASK_BOOLEAN_TRUE) return {GlyphType::BOOLEAN, 1};
   if (IsVariable(gc.mask))
     return {GlyphType::VARIABLE, DecodeVariable(gc.mask)};
   return {};
@@ -94,8 +94,6 @@ GlyphCompact GlyphDecoder::Encode(const Glyph& g) const {
     }
     case GlyphType::VARIABLE:
       return {EncodeVariable(g.value)};
-    case GlyphType::BOOLEAN:
-      return {g.value ? MASK_BOOLEAN_TRUE : MASK_BOOLEAN_FALSE};
     default: {
       auto itg = map_glyph_type_mask.find(g.type);
       Assert(itg != map_glyph_type_mask.end());

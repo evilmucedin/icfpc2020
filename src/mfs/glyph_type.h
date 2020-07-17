@@ -8,7 +8,6 @@ enum class GlyphType {
   OPERAND,
   FUNCTION,
   VARIABLE,
-  BOOLEAN,
   UNKNOWN,
   END
 };
