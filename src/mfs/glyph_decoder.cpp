@@ -95,6 +95,8 @@ void GlyphDecoder::InitMap() {
       31 * rows[0] + 23 * rows[1] + 21 * rows[2] + 21 * rows[3] + 31 * rows[4]);
   RegisterFunctionType(FunctionType::NIL__EMPTY_LIST, "nil",
                        7 * rows[0] + 5 * rows[1] + 7 * rows[2]);
+  RegisterFunctionType(FunctionType::IS_NIL, "isnil",
+                       7 * rows[0] + 7 * rows[1] + 7 * rows[2]);
   RegisterFunctionType(FunctionType::VECTOR, "vec",
                        63 * rows[0] + 3 * rows[1] + 5 * rows[2] + 9 * rows[3] +
                            17 * rows[4] + 33 * rows[5]);

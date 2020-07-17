@@ -24,6 +24,7 @@ enum class FunctionType {
   CAR__FIRST = 26,
   CDR__TAIL = 27,
   NIL__EMPTY_LIST = 28,
+  IS_NIL = 29,
   VECTOR = 31,
   IF0 = 37,
   END

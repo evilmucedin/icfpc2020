@@ -19,6 +19,7 @@ unsigned ExpectedParameters(FunctionType ftype) {
     case FunctionType::CAR__FIRST:
     case FunctionType::CDR__TAIL:
     case FunctionType::NIL__EMPTY_LIST:
+    case FunctionType::IS_NIL:
       return 1;
     case FunctionType::SUM:
     case FunctionType::PRODUCT:
@@ -90,6 +91,15 @@ Expression Apply(FunctionType ftype, Expression& e0) {
       return e;
     case FunctionType::NIL__EMPTY_LIST:
       return Expression(Glyph(FunctionType::K_COMBINATOR));
+    case FunctionType::IS_NIL:
+      if (e.IsList()) {
+        return Expression(
+            Glyph(((e.v.size() == 1) &&
+                   (e.v[0].ftype == FunctionType::NIL__EMPTY_LIST))
+                      ? FunctionType::K_COMBINATOR
+                      : FunctionType::FALSE__SECOND));
+      }
+      return {};
     default:
       assert(false);
   }

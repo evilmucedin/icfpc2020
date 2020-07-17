@@ -41,6 +41,21 @@ LEF Expression::GetLEF() const {
   return v[0].lef;
 }
 
+bool Expression::IsList() const {
+  if (v.size() == 1) {
+    return v[0].ftype == FunctionType::NIL__EMPTY_LIST;
+  } else if (v.size() >= 4) {
+    if ((v[0].type == GlyphType::OPERAND) &&
+        (v[1].type == GlyphType::OPERAND) &&
+        (v[2].ftype == FunctionType::CONS__PAIR) &&
+        (v.back().ftype == FunctionType::NIL__EMPTY_LIST)) {
+      // probably list, more complex check required
+      return true;
+    }
+  }
+  return false;
+}
+
 void Expression::Print() const {
   std::cout << "[";
   for (auto& g : v) {
