@@ -31,6 +31,7 @@ class GlyphDecoder {
   int64_t DecodeNumber(uint64_t mask) const;
   uint64_t EncodeNumber(int64_t value) const;
 
+  bool IsVariable(uint64_t mask) const;
   int64_t DecodeVariable(uint64_t mask) const;
   uint64_t EncodeVariable(int64_t value) const;
 
