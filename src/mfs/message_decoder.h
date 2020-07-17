@@ -9,18 +9,21 @@
 #include "message.h"
 #include "message_as_image.h"
 
+#include "common/linear_algebra/matrix.h"
+
 class MessageDecoder {
  protected:
   GlyphDecoder& gd;
 
  public:
+  using TMatrixSlice = MatrixSlice<const la::MatrixBool>;
+
   MessageDecoder(GlyphDecoder& _gd);
 
-  GlyphCompact DecodeGlyphCompact(const MessageAsImage& mi,
-                                  const MatrixSlice& s);
-  Glyph DecodeGlyph(const MessageAsImage& mi, const MatrixSlice& s);
-  Expression DecodeExpression(const MessageAsImage& mi, const MatrixSlice& s);
-  Line DecodeLine(const MessageAsImage& mi, const MatrixSlice& s);
+  GlyphCompact DecodeGlyphCompact(const TMatrixSlice& ms);
+  Glyph DecodeGlyph(const TMatrixSlice& ms);
+  Expression DecodeExpression(const TMatrixSlice& ms);
+  Line DecodeLine(const TMatrixSlice& s);
 
   Message Decode(const MessageAsImage& mi);
 };
