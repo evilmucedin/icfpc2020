@@ -5,19 +5,26 @@
 #include <iostream>
 
 Glyph::Glyph()
-    : type(GlyphType::UNKNOWN), ftype(FunctionType::NONE), value(0) {}
+    : type(GlyphType::UNKNOWN), ftype(FunctionType::NONE), value(0), lef(0) {}
 
 Glyph::Glyph(GlyphType _type)
-    : type(_type), ftype(FunctionType::NONE), value(0) {}
+    : type(_type), ftype(FunctionType::NONE), value(0), lef(0) {}
 
 Glyph::Glyph(FunctionType _ftype)
-    : type(GlyphType::FUNCTION), ftype(_ftype), value(0) {}
+    : type(GlyphType::FUNCTION), ftype(_ftype), value(0), lef(0) {}
 
 Glyph::Glyph(GlyphType _type, int64_t _value)
-    : type(_type), ftype(FunctionType::NONE), value(_value) {}
+    : type(_type), ftype(FunctionType::NONE), value(_value), lef(0) {}
+
+Glyph::Glyph(const LEF& _lef)
+    : type(GlyphType::LINEAR_ENCODED_FORM),
+      ftype(FunctionType::NONE),
+      value(0),
+      lef(_lef) {}
 
 bool Glyph::operator==(const Glyph& g) const {
-  return (type == g.type) && (ftype == g.ftype) && (value == g.value);
+  return (type == g.type) && (ftype == g.ftype) && (value == g.value) &&
+         (lef == g.lef);
 }
 
 void Glyph::Print() const {
@@ -42,6 +49,9 @@ void Glyph::Print() const {
       break;
     case GlyphType::VARIABLE:
       std::cout << "V" << value;
+      break;
+    case GlyphType::LINEAR_ENCODED_FORM:
+      std::cout << "L" << LEFDecodeNumber(lef);
       break;
     default:
       std::cout << "UNKNOWN";

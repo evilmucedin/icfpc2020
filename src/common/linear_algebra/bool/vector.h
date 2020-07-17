@@ -176,5 +176,9 @@ class VectorBool {
     t -= v;
     return t;
   }
+
+  bool operator==(const TSelf& v) const {
+    return (size == v.size) && (data == v.data);
+  }
 };
 }  // namespace la
