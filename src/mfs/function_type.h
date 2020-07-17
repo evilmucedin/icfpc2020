@@ -21,5 +21,6 @@ enum class FunctionType {
   POWER_OF_TWO = 23,
   I_COMBINATOR = 24,
   CONS = 25,
+  CAR = 26,
   END
 };
