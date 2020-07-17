@@ -69,7 +69,14 @@ void GlyphDecoder::InitMap() {
                        7 * rows[0] + 5 * rows[1] + 1 * rows[2]);
   RegisterFunctionType(FunctionType::FALSE_SECOND,
                        7 * rows[0] + 1 * rows[1] + 5 * rows[2]);
+  RegisterFunctionType(FunctionType::POWER_OF_TWO,
+                       127 * rows[0] + 65 * rows[1] + 89 * rows[2] +
+                           85 * rows[3] + 69 * rows[4] + 65 * rows[5] +
+                           127 * rows[6]);
   RegisterFunctionType(FunctionType::I_COMBINATOR, 3 * rows[0] + 3 * rows[1]);
+  RegisterFunctionType(
+      FunctionType::CONS,
+      31 * rows[0] + 21 * rows[1] + 21 * rows[2] + 21 * rows[3] + 31 * rows[4]);
 }
 
 Glyph GlyphDecoder::Decode(const GlyphCompact& gc) const {
