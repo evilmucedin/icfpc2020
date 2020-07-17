@@ -20,7 +20,9 @@ class MessageDecoder {
 
   MessageDecoder(GlyphDecoder& _gd);
 
+  const TMatrixSlice Compress(const TMatrixSlice& ms);
   GlyphCompact DecodeGlyphCompact(const TMatrixSlice& ms);
+  Glyph DecodeLEFGlyph(const TMatrixSlice& ms);
   Glyph DecodeGlyph(const TMatrixSlice& ms);
   Expression DecodeExpression(const TMatrixSlice& ms);
   Line DecodeLine(const TMatrixSlice& s);

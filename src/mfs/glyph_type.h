@@ -8,6 +8,7 @@ enum class GlyphType {
   OPERAND,
   FUNCTION,
   VARIABLE,
+  LINEAR_ENCODED_FORM,
   UNKNOWN,
   END
 };

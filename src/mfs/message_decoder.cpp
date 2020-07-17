@@ -1,8 +1,16 @@
 #include "message_decoder.h"
 
 #include "common/base.h"
+#include "common/linear_algebra/bool/vector.h"
 
 MessageDecoder::MessageDecoder(GlyphDecoder& _gd) : gd(_gd) {}
+
+const MessageDecoder::TMatrixSlice MessageDecoder::Compress(
+    const TMatrixSlice& ms) {
+  unsigned re = ms.Rows() - 1;
+  for (; (re > 0) && ms.IsRowEmpty(re);) --re;
+  return TMatrixSlice(ms, 0, re + 1);
+}
 
 GlyphCompact MessageDecoder::DecodeGlyphCompact(const TMatrixSlice& ms) {
   assert((ms.Rows() <= 8) && (ms.Columns() <= 8));
@@ -15,8 +23,20 @@ GlyphCompact MessageDecoder::DecodeGlyphCompact(const TMatrixSlice& ms) {
   return {v};
 }
 
+Glyph MessageDecoder::DecodeLEFGlyph(const TMatrixSlice& ms) {
+  assert(ms.Rows() == 2);
+  la::VectorBool v(ms.Columns());
+  for (unsigned c = 0; c < ms.Columns(); ++c) {
+    assert(ms.Get(0, c) != ms.Get(1, c));
+    v.Set(c, ms.Get(0, c));
+  }
+  return {v};
+}
+
 Glyph MessageDecoder::DecodeGlyph(const TMatrixSlice& ms) {
-  return gd.Decode(DecodeGlyphCompact(ms));
+  return ((ms.Rows() == 2) && (ms.Columns() > 2))
+             ? DecodeLEFGlyph(ms)
+             : gd.Decode(DecodeGlyphCompact(ms));
 }
 
 Expression MessageDecoder::DecodeExpression(const TMatrixSlice& ms) {
@@ -26,7 +46,8 @@ Expression MessageDecoder::DecodeExpression(const TMatrixSlice& ms) {
     for (ce = cb; ce < ms.Columns(); ++ce) {
       if (ms.IsColumnEmpty(ce)) break;
     }
-    e.v.push_back(DecodeGlyph(TMatrixSlice(ms, 0, ms.Rows(), cb, ce)));
+    e.v.push_back(
+        DecodeGlyph(Compress(TMatrixSlice(ms, 0, ms.Rows(), cb, ce))));
     cb = ce + 1;
     if (ms.IsColumnEmpty(cb)) ++cb;
   }
