@@ -15,6 +15,8 @@ enum class FunctionType {
   NEGATE = 16,
   S_COMBINATOR = 18,
   F19 = 19,
-  F20 = 20,
+  B_COMBINATOR = 20,
+  K_COMBINATOR = 21,  // Also works as 'True' from boolean operators
+  FALSE_SECOND = 22,
   END
 };
