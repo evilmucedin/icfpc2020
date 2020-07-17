@@ -65,6 +65,8 @@ void GlyphDecoder::InitMap() {
                        7 * rows[0] + 7 * rows[1] + 3 * rows[2]);
   RegisterFunctionType(FunctionType::F19,
                        7 * rows[0] + 5 * rows[1] + 3 * rows[2]);
+  RegisterFunctionType(FunctionType::F20,
+                       7 * rows[0] + 3 * rows[1] + 3 * rows[2]);
 }
 
 Glyph GlyphDecoder::Decode(const GlyphCompact& gc) const {

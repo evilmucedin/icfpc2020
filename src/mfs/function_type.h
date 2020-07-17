@@ -15,5 +15,6 @@ enum class FunctionType {
   NEGATE = 16,
   S_COMBINATOR = 18,
   F19 = 19,
+  F20 = 20,
   END
 };
