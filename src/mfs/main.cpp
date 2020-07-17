@@ -22,8 +22,10 @@ void PNGExample(const std::string& filename) {
   m.Print();
 }
 
-int main() {
-  PNGExample("../src/mfs/messages/message1.png");
+int main(int argc, char* argv[]) {
+  string s = "1";
+  if (argc >= 2) s = argv[1];
+  PNGExample("../src/mfs/messages/message" + s + ".png");
   //   GlyphDecoder gd = GlyphDecoder::GetDecoder();
   //   for (int64_t i = 0; i < 30; ++i) {
   //     auto ei = gd.Encode(Glyph(GlyphType::VARIABLE, i));
