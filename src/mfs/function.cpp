@@ -30,6 +30,7 @@ unsigned ExpectedParameters(FunctionType ftype) {
     case FunctionType::STRICT_LESS:
     case FunctionType::K_COMBINATOR:
     case FunctionType::FALSE__SECOND:
+    case FunctionType::CONCAT:
       return 2;
     case FunctionType::S_COMBINATOR:
     case FunctionType::C_COMBINATOR:
@@ -153,6 +154,14 @@ Expression Apply(FunctionType ftype, const Expression& e0,
       return e0;
     case FunctionType::FALSE__SECOND:
       return e1;
+    case FunctionType::CONCAT:
+      if (e0.IsList() && e1.IsList()) {
+        Expression e = e0;
+        e.v.pop_back();
+        e.Add(e1);
+        return e;
+      }
+      return {};
     default:
       assert(false);
   }
