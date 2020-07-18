@@ -21,6 +21,7 @@ unsigned ExpectedParameters(FunctionType ftype) {
     case FunctionType::NIL__EMPTY_LIST:
     case FunctionType::IS_NIL:
     case FunctionType::LOG2:
+    case FunctionType::LENGTH:
       return 1;
     case FunctionType::SUM:
     case FunctionType::PRODUCT:
@@ -106,6 +107,11 @@ Expression Apply(FunctionType ftype, const Expression& e0) {
         int64_t v = e0.GetNumber(), r = 0;
         for (; v >= 2; v /= 2) ++r;
         return Expression(r);
+      }
+      return {};
+    case FunctionType::LENGTH:
+      if (e.IsList()) {
+        return Expression(e.v.size() / 4);
       }
       return {};
     default:

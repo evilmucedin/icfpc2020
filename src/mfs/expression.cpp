@@ -45,16 +45,15 @@ LEF Expression::GetLEF() const {
 }
 
 bool Expression::IsList() const {
-  if (v.size() == 1) {
-    return v[0].ftype == FunctionType::NIL__EMPTY_LIST;
-  } else if (v.size() >= 4) {
-    if ((v[0].type == GlyphType::OPERAND) &&
-        (v[1].type == GlyphType::OPERAND) &&
-        (v[2].ftype == FunctionType::CONS__PAIR) &&
-        (v.back().ftype == FunctionType::NIL__EMPTY_LIST)) {
-      // probably list, more complex check required
+  for (unsigned i = 0; i < v.size(); i += 4) {
+    if ((v[i].ftype == FunctionType::NIL__EMPTY_LIST) && (v.size() == i + 1))
       return true;
-    }
+    if (v.size() <= i + 4) return false;
+    if ((v[i].type != GlyphType::OPERAND) ||
+        (v[i + 1].type != GlyphType::OPERAND) ||
+        (v[i + 2].ftype != FunctionType::CONS__PAIR) ||
+        (v[i + 3].type == GlyphType::OPERAND))
+      return false;
   }
   return false;
 }

@@ -14,6 +14,7 @@ void Message::Process() {
   // Manual functions
   aliases[1117] = Expression(Glyph(FunctionType::POWER_OF_TWO));
   aliases[1118] = Expression(Glyph(FunctionType::LOG2));
+  aliases[1128] = Expression(Glyph(FunctionType::LENGTH));
 
   ds::UnsignedSet us(v.size());
   for (unsigned i = 0; i < v.size(); ++i) {
