@@ -11,12 +11,18 @@ void Message::Compress() {
 }
 
 void Message::Process() {
+  // Manual functions
+  aliases[1117] = Expression(Glyph(FunctionType::POWER_OF_TWO));
+  aliases[1118] = Expression(Glyph(FunctionType::LOG2));
+
   ds::UnsignedSet us(v.size());
   for (unsigned i = 0; i < v.size(); ++i) {
     assert(v[i].v.size() == 1);
     assert(v[i].v[0].v.size() >= 3);
     assert(v[i].v[0].v[1].type == GlyphType::EQUALITY);
-    if (v[i].v[0].v[0].type == GlyphType::ALIAS) us.Insert(i);
+    if (v[i].v[0].v[0].type == GlyphType::ALIAS) {
+      if (aliases.find(v[i].v[0].v[0].value) == aliases.end()) us.Insert(i);
+    }
   }
 
   for (bool next = true; next;) {

@@ -27,8 +27,10 @@ void GlyphDecoder::RegisterFunctionType(FunctionType type,
   Assert(map_mask_function_type.find(mask) == map_mask_function_type.end());
   Assert(map_function_type_mask.find(type) == map_function_type_mask.end());
   Assert(map_id_function_type.find(id) == map_id_function_type.end());
-  map_mask_function_type[mask] = type;
-  map_function_type_mask[type] = mask;
+  if (mask) {
+    map_mask_function_type[mask] = type;
+    map_function_type_mask[type] = mask;
+  }
   map_id_function_type[id] = type;
 }
 
@@ -106,6 +108,7 @@ void GlyphDecoder::InitMap() {
                        28 * rows[0] + 32 * rows[1] + 78 * rows[2] +
                            85 * rows[3] + 57 * rows[4] + 2 * rows[5] +
                            28 * rows[6]);
+  RegisterFunctionType(FunctionType::LOG2, "log2", 0);
 }
 
 Glyph GlyphDecoder::Decode(const GlyphCompact& gc) const {
