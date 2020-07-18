@@ -28,5 +28,8 @@ enum class FunctionType {
   VECTOR = 31,
   IF0 = 37,
   GALAXY = 42,
+  // ...
+  GALAXY_FILE = 100,
+  LOG2 = 101,
   END
 };

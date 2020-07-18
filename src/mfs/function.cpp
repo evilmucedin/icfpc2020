@@ -20,6 +20,7 @@ unsigned ExpectedParameters(FunctionType ftype) {
     case FunctionType::CDR__TAIL:
     case FunctionType::NIL__EMPTY_LIST:
     case FunctionType::IS_NIL:
+    case FunctionType::LOG2:
       return 1;
     case FunctionType::SUM:
     case FunctionType::PRODUCT:
@@ -98,6 +99,13 @@ Expression Apply(FunctionType ftype, const Expression& e0) {
                    (e.v[0].ftype == FunctionType::NIL__EMPTY_LIST))
                       ? FunctionType::K_COMBINATOR
                       : FunctionType::FALSE__SECOND));
+      }
+      return {};
+    case FunctionType::LOG2:
+      if (e0.IsNumber()) {
+        int64_t v = e0.GetNumber(), r = 0;
+        for (; v >= 2; v /= 2) ++r;
+        return Expression(r);
       }
       return {};
     default:
