@@ -1,7 +1,13 @@
 import sys
-from PIL import Image
+from PIL import Image, ImageTk
+from interaction import send
 import os
+import tkinter as tk
 sys.setrecursionlimit(1000000)
+
+HALF_WIDTH, HALF_HEIGHT = 160, 160
+COLORS = [(255, 255, 255), (255, 0, 0), (0, 255, 0), (0, 0, 255)]
+SCALE_FACTOR = 4
 
 with open('src/mfs/messages/galaxy.txt', 'rt') as f:
     lines = [line.strip().split(' ') for line in f]
@@ -152,7 +158,6 @@ def to_python(val):
     else:
         return val
 
-
 def from_python(x):
     if type(x) == list:
         if len(x) == 0:
@@ -161,32 +166,10 @@ def from_python(x):
             return cons(from_python(x[0]), from_python(x[1:]))
     elif type(x) == tuple:
         assert len(x) == 2, x
-        return cons(from_python(x[0]), from_python(x[1]))
+        return vec(from_python(x[0]), from_python(x[1]))
     else:
         assert type(x) == int, x
         return x
-
-# print(eager(symbols[':1128'](cons(10, cons(10, cons(10, nil)))), deep=True))
-# print(eager(symbols['galaxy'](cons(0, nil), vec(0, 0)), deep=True))
-
-def draw(points, out, color=(255, 255, 255)):
-    if not points:
-        print(f'empty points for {out}')
-        return
-    minx, miny = -160, -160
-    maxx, maxy = 160, 160
-    # minx, miny = points[0]
-    # maxx, maxy = points[0]
-    for x, y in points:
-        minx = min(minx, x)
-        maxx = max(maxx, x)
-        miny = min(miny, y)
-        maxy = max(maxy, y)
-    im = Image.new("RGB", (maxx - minx + 1, maxy - miny + 1), 'black')
-    pixels = im.load()
-    for x, y in points:
-        pixels[x - minx, y - miny] = color
-    im.save(out)
 
 override_vec = {
     3: vec(8, 4),
@@ -199,17 +182,46 @@ override_vec = {
     10: vec(1, 4),
 }
 
-state = cons(1, cons(cons(1, nil), cons(0, cons(nil, nil))))
-# state = cons(2, cons(cons(1, cons(-1, nil)), cons(0, cons(nil, nil))))
-for iter in range(12):
-    os.makedirs(f'{iter}', exist_ok=True)
-    coords = vec(0, 0)
-    if iter in override_vec:
-        coords = override_vec[iter]
-    it = symbols['galaxy'](state, coords)
-    state = eager(car(cdr(it)), deep=True)
-    flag, st, data = to_python(it)
-    print(flag, st, data)
-    for i, imgData in enumerate(data):
-        fn = f'{iter}/{i}.png'
-        draw(imgData, fn)
+def drawState(state, click_x, click_y):
+    in_data = vec(click_x, click_y)
+    while True:
+        raw_result = symbols['galaxy'](state, in_data)
+        flag, st, data = to_python(raw_result)
+        state = eager(car(cdr(raw_result)), deep=True)
+        if flag == 0:
+            break
+        else:
+            in_data = from_python(send(data))
+    im = Image.new("RGB", (2 * HALF_WIDTH + 1, 2 * HALF_HEIGHT + 1), 'black')
+    pixels = im.load()
+    for ci, points in enumerate(data):
+        for x, y in points:
+            assert -HALF_WIDTH <= x <= HALF_WIDTH
+            assert -HALF_HEIGHT <= x <= HALF_HEIGHT
+            pixels[x + HALF_WIDTH, y + HALF_HEIGHT] = COLORS[ci]
+    return state, im
+
+root = tk.Tk()
+
+def on_click(event):
+    process_click(event.x // SCALE_FACTOR - HALF_WIDTH, event.y // SCALE_FACTOR - HALF_HEIGHT)
+
+w = tk.Canvas(root, width=SCALE_FACTOR * (2 * HALF_WIDTH + 1), height=SCALE_FACTOR * (2 * HALF_HEIGHT + 1))
+w.bind("<Button-1>", on_click)
+w.pack()
+
+# state = nil
+# state = cons(1, cons(cons(1, nil), cons(0, cons(nil, nil))))
+state = cons(2, cons(cons(1, cons(-1, nil)), cons(0, cons(nil, nil))))
+
+def process_click(x, y):
+    global state, img
+    print(f'click at {x}:{y} at state {to_python(state)}')
+    state, img = drawState(state, x, y)
+    img = img.resize((SCALE_FACTOR * (2 * HALF_WIDTH + 1), SCALE_FACTOR * (2 * HALF_HEIGHT + 1)), resample=Image.BOX)
+    img = ImageTk.PhotoImage(img)
+    w.create_image(0, 0, image=img, anchor="nw")
+
+process_click(0, 0)
+
+root.mainloop()
