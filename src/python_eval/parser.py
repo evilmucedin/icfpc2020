@@ -38,7 +38,11 @@ class F:
     def __repr__(self):
         if not self.args:
             return self.name
-        return f"({self.name} {' '.join(str(arg) for arg in self.args)})"
+        lines = ['(' + self.name]
+        for arg in self.args:
+            lines.extend(' ' + line for line in repr(arg).split('\n'))
+        lines[-1] = lines[-1] + ')'
+        return '\n'.join(lines)
     
     def eager(self):
         if hasattr(self, 'cache'):
@@ -91,6 +95,17 @@ def _isnil(lst):
     assert isinstance(lst, F) and lst.name in ('nil', 'cons', 'vec'), f'{lst} is not valid argument for isnil'
     return true if lst.name == 'nil' else false
 
+def _bottom():
+    raise AssertionError()
+bottom = F('bottom', 0, _bottom)
+
+def s(x, y, z):
+    try:
+        w = y(z)
+    except:
+        w  = bottom
+    return x(z, w)
+
 toplevel = {
     't': true,
     'f': false,
@@ -99,12 +114,14 @@ toplevel = {
     'vec': vec,
     'car': car,
     'cdr': cdr,
+    'inc': F('inc', 1, lambda x: eager(x) + 1),
+    'dec': F('dec', 1, lambda x: eager(x) - 1),
     'neg': F('neg', 1, lambda x: -eager(x)),
     'add': F('add', 2, lambda x, y: eager(x) + eager(y)),
     'mul': F('mul', 2, lambda x, y: eager(x) * eager(y)),
     'eq': F('eq', 2, lambda x, y: true if eager(x) == eager(y) else false),
     'lt': F('lt', 2, lambda x, y: true if eager(x) < eager(y) else false),
-    's': F('s', 3, lambda x, y, z: x(z, y(z))),
+    's': F('s', 3, s),
     'c': F('c', 3, lambda x, y, z: x(z, y)),
     'b': F('b', 3, lambda x, y, z: x(y(z))),
     'i': F('i', 1, lambda x: x),
@@ -183,11 +200,15 @@ override_vec = {
 }
 
 def drawState(state, click_x, click_y):
-    in_data = vec(-click_x, -click_y)
+    in_data = vec(click_x, click_y)
     while True:
-        raw_result = symbols['galaxy'](state, in_data)
-        flag, st, data = to_python(raw_result)
-        state = eager(car(cdr(raw_result)), deep=True)
+        try:
+            raw_result = symbols['galaxy'](state, in_data)
+            flag, st, data = to_python(raw_result)
+            state = eager(car(cdr(raw_result)), deep=True)
+        except Exception as e:
+            print('CANNOT EVAL: ', state)
+            raise
         if flag == 0:
             break
         else:
@@ -198,7 +219,7 @@ def drawState(state, click_x, click_y):
         for x, y in points:
             # assert -HALF_WIDTH <= x <= HALF_WIDTH
             # assert -HALF_HEIGHT <= y <= HALF_HEIGHT
-            pixels[-x + HALF_WIDTH, -y + HALF_HEIGHT] = COLORS[ci]
+            pixels[x + HALF_WIDTH, y + HALF_HEIGHT] = COLORS[ci]
     return state, im
 
 root = tk.Tk()
