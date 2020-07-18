@@ -159,6 +159,9 @@ def from_python(x):
             return nil
         else:
             return cons(from_python(x[0]), from_python(x[1:]))
+    elif type(x) == tuple:
+        assert len(x) == 2, x
+        return cons(from_python(x[0]), from_python(x[1]))
     else:
         assert type(x) == int, x
         return x
