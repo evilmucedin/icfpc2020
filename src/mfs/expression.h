@@ -24,7 +24,11 @@ class Expression {
   void Add(const Glyph& g);
   void Add(const Expression& e);
 
+  void ReplaceAlias(unsigned index);
   Expression GetOne(unsigned index, unsigned count = 1);
+  bool EvaluateOnce();
+  void Evaluate();
+
   void Compress();
 
   void Print() const;
