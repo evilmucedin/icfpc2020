@@ -1,4 +1,6 @@
 import sys
+from PIL import Image
+import os
 sys.setrecursionlimit(1000000)
 
 with open('src/mfs/messages/galaxy.txt', 'rt') as f:
@@ -51,7 +53,6 @@ car = F('car', 1, lambda lst: lst(true))
 cdr = F('cdr', 1, lambda lst: lst(false))
 
 def quot(a, b):
-    # print('quot', a, b)
     return a//b if a*b>0 else (a+(-a%b))//b
 
 assert quot(4, 2) == 2
@@ -113,34 +114,55 @@ def eval(expr):
             return int(op)
     return _eval()
 
-int1 = symbols['galaxy'](nil, vec(0, 0))
-print(eager(car(int1), deep=True))
-print(eager(car(cdr(int1)), deep=True))
-print(eager(car(cdr(cdr(int1))), deep=True))
+def to_python(val):
+    val = eager(val)
+    if isinstance(val, F):
+        if val.name == 'cons':
+            assert len(val.args) == 2
+            head = to_python(val.args[0])
+            tail = to_python(val.args[1])
+            if not isinstance(tail, list):
+                tail = [tail]
+            return [head] + tail
+        elif val.name == 'nil':
+            return []
+        elif val.name == 'vec':
+            assert len(val.args) == 2
+            a = to_python(val.args[0])
+            b = to_python(val.args[1])
+            return (a, b)
+    else:
+        return val
 
-# for line in lines:
-#     print(line[0], eager(symbols[line[0]]))
+# print(eager(symbols[':1128'](cons(10, cons(10, cons(10, nil)))), deep=True))
+# print(eager(symbols['galaxy'](cons(0, nil), vec(0, 0)), deep=True))
 
-# def terminal(a):
-#     if a[0] == ':':
-#         a = 'var' + a[1:]
-#     elif a[0] == '-':
-#         a = f'({a})'
-#     elif not a[0].isdigit():
-#         symbols.add(a)
+def draw(points, out):
+    if not points:
+        print(f'empty points for {out}')
+        return
+    minx, miny = points[0]
+    maxx, maxy = points[0]
+    for x, y in points:
+        minx = min(minx, x)
+        maxx = max(maxx, x)
+        miny = min(miny, y)
+        maxy = max(maxy, y)
+    im = Image.new("RGB", (maxx - minx + 1, maxy - miny + 1), 'black')
+    pixels = im.load()
+    for x, y in points:
+        pixels[x - minx, y - miny] = (255, 255, 255)
+    im.save(out)
 
-#     return a
-# return
-#         a = a[1:]
-#         expr1, a = parseExpr(a)
-#         expr2, a = parseExpr(a)
-#         return f"({expr1} {expr2})", a
-#     else:
-#         return terminal(a[0]), a[1:]
-
-# for line in lines:
-#     assert line[1] == '='
-#     expr, rem = parseExpr(line[2:])
-#     print(terminal(line[0]), '=', expr)
-
-# # print(symbols)
+# it = cons(0, cons(cons(2, nil), cons(0, cons(nil, nil))))
+it = nil
+it = cons(nil, cons(it, nil))
+for iter in range(10):
+    # print(eager(car(cdr(it)), deep=True))
+    it = symbols['galaxy'](car(cdr(it)), vec(0, 0))
+    flag, state, data = to_python(it)
+    print(flag, state, data)
+    for i, imgData in enumerate(data):
+        fn = f'{iter}/{i}.png'
+        os.makedirs(f'{iter}', exist_ok=True)
+        draw(imgData, fn)
