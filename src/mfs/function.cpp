@@ -44,27 +44,33 @@ unsigned ExpectedParameters(FunctionType ftype) {
   }
 }
 
-Expression Apply(FunctionType ftype) {
+Expression Evaluate(FunctionType ftype) {
   FakeUse(ftype);
   assert(ExpectedParameters(ftype) == 0);
   assert(false);
   return {};
 }
 
-Expression Apply(FunctionType ftype, const Expression& e0) {
+Expression Evaluate(FunctionType ftype, Expression& e0) {
   assert(ExpectedParameters(ftype) == 1);
-  Expression e;
+  Expression etemp;
   switch (ftype) {
     case FunctionType::SUCCESSOR:
-      return e0.IsNumber() ? Expression(e0.GetNumber() + 1) : Expression();
+      e0.Evaluate();
+      assert(e0.IsNumber());
+      return Expression(e0.GetNumber() + 1);
     case FunctionType::PREDECESSOR:
-      return e0.IsNumber() ? Expression(e0.GetNumber() - 1) : Expression();
+      e0.Evaluate();
+      assert(e0.IsNumber());
+      return Expression(e0.GetNumber() - 1);
     case FunctionType::MODULATE:
+      e0.Evaluate();
       if (e0.IsNumber()) {
         return Expression(Glyph(LEFEncodeNumber(e0.GetNumber())));
       }
       return {};
     case FunctionType::DEMODULATE:
+      e0.Evaluate();
       if (e0.IsLEF()) {
         return Expression(LEFDecodeNumber(e0.GetLEF()));
       }
@@ -72,104 +78,113 @@ Expression Apply(FunctionType ftype, const Expression& e0) {
     case FunctionType::SEND:
       return {};
     case FunctionType::NEGATE:
-      return e0.IsNumber() ? Expression(-e0.GetNumber()) : Expression();
+      e0.Evaluate();
+      assert(e0.IsNumber());
+      return Expression(-e0.GetNumber());
     case FunctionType::POWER_OF_TWO:
-      if (e0.IsNumber()) {
-        int64_t v = e0.GetNumber();
-        assert(v >= 0);
-        return Expression((1ll << v));
-      }
-      return {};
+      e0.Evaluate();
+      assert(e0.IsNumber());
+      assert(e0.GetNumber() >= 0);
+      return Expression((1ll << e0.GetNumber()));
     case FunctionType::I_COMBINATOR:
       return e0;
     case FunctionType::CAR__FIRST:
-      e.Add(Glyph(GlyphType::OPERAND));
-      e.Add(e0);
-      e.Add(Glyph(FunctionType::K_COMBINATOR));
-      return e;
+      etemp.Add(Glyph(GlyphType::OPERAND));
+      etemp.Add(e0);
+      etemp.Add(Glyph(FunctionType::K_COMBINATOR));
+      return etemp;
     case FunctionType::CDR__TAIL:
-      e.Add(Glyph(GlyphType::OPERAND));
-      e.Add(e0);
-      e.Add(Glyph(FunctionType::FALSE__SECOND));
-      return e;
+      etemp.Add(Glyph(GlyphType::OPERAND));
+      etemp.Add(e0);
+      etemp.Add(Glyph(FunctionType::FALSE__SECOND));
+      return etemp;
     case FunctionType::NIL__EMPTY_LIST:
       return Expression(Glyph(FunctionType::K_COMBINATOR));
     case FunctionType::IS_NIL:
-      if (e.IsList()) {
-        return Expression(
-            Glyph(((e.v.size() == 1) &&
-                   (e.v[0].ftype == FunctionType::NIL__EMPTY_LIST))
-                      ? FunctionType::K_COMBINATOR
-                      : FunctionType::FALSE__SECOND));
+      while (!e0.IsList()) {
+        if (!e0.EvaluateOnce()) {
+          break;
+        }
       }
-      return {};
+      assert(e0.IsList());
+      return Expression(Glyph(((e0.v.size() == 1) &&
+                               (e0.v[0].ftype == FunctionType::NIL__EMPTY_LIST))
+                                  ? FunctionType::K_COMBINATOR
+                                  : FunctionType::FALSE__SECOND));
     case FunctionType::LOG2:
-      if (e0.IsNumber()) {
+      e0.Evaluate();
+      assert(e0.IsNumber());
+      {
         int64_t v = e0.GetNumber(), r = 0;
         for (; v >= 2; v /= 2) ++r;
         return Expression(r);
       }
-      return {};
-    case FunctionType::LENGTH:
-      if (e.IsList()) {
-        return Expression(e.v.size() / 4);
-      }
-      return {};
+    // case FunctionType::LENGTH:
+    //   e0.Evaluate();
+    //   assert(e0.IsList());
+    //   return Expression(e0.v.size() / 4);
     default:
       assert(false);
   }
   return {};
 }
 
-Expression Apply(FunctionType ftype, const Expression& e0,
-                 const Expression& e1) {
+Expression Evaluate(FunctionType ftype, Expression& e0, Expression& e1) {
   assert(ExpectedParameters(ftype) == 2);
   switch (ftype) {
     case FunctionType::SUM:
-      return (e0.IsNumber() && e1.IsNumber())
-                 ? Expression(e0.GetNumber() + e1.GetNumber())
-                 : Expression();
+      e0.Evaluate();
+      e1.Evaluate();
+      assert(e0.IsNumber() && e1.IsNumber());
+      return Expression(e0.GetNumber() + e1.GetNumber());
     case FunctionType::PRODUCT:
-      return (e0.IsNumber() && e1.IsNumber())
-                 ? Expression(e0.GetNumber() * e1.GetNumber())
-                 : Expression();
+      e0.Evaluate();
+      e1.Evaluate();
+      assert(e0.IsNumber() && e1.IsNumber());
+      return Expression(e0.GetNumber() * e1.GetNumber());
     case FunctionType::DIVISION:
-      return (e0.IsNumber() && e1.IsNumber())
-                 ? Expression(e0.GetNumber() / e1.GetNumber())
-                 : Expression();
+      e0.Evaluate();
+      e1.Evaluate();
+      assert(e0.IsNumber() && e1.IsNumber());
+      return Expression(e0.GetNumber() / e1.GetNumber());
     case FunctionType::EQUALITY:
-      if (e0.IsNumber() && e1.IsNumber())
-        return Expression(Glyph((e0.GetNumber() == e1.GetNumber())
-                                    ? FunctionType::K_COMBINATOR
-                                    : FunctionType::FALSE__SECOND));
-      return (e0 == e1) ? Expression(Glyph(FunctionType::K_COMBINATOR))
-                        : Expression();
+      if (e0 == e1) return Expression(FunctionType::K_COMBINATOR);
+      e0.Evaluate();
+      e1.Evaluate();
+      assert(e0.IsNumber() && e1.IsNumber());
+      return Expression(Glyph((e0.GetNumber() == e1.GetNumber())
+                                  ? FunctionType::K_COMBINATOR
+                                  : FunctionType::FALSE__SECOND));
     case FunctionType::STRICT_LESS:
-      return (e0.IsNumber() && e1.IsNumber())
-                 ? Expression(Glyph((e0.GetNumber() < e1.GetNumber())
-                                        ? FunctionType::K_COMBINATOR
-                                        : FunctionType::FALSE__SECOND))
-                 : Expression();
+      e0.Evaluate();
+      e1.Evaluate();
+      assert(e0.IsNumber() && e1.IsNumber());
+      return Expression(Glyph((e0.GetNumber() == e1.GetNumber())
+                                  ? FunctionType::K_COMBINATOR
+                                  : FunctionType::FALSE__SECOND));
     case FunctionType::K_COMBINATOR:
       return e0;
     case FunctionType::FALSE__SECOND:
       return e1;
     case FunctionType::CONCAT:
-      if (e0.IsList() && e1.IsList()) {
+      e0.Evaluate();
+      e1.Evaluate();
+      assert(e0.IsList() && e1.IsList());
+      {
         Expression e = e0;
+        assert(e.v.back().ftype == FunctionType::NIL__EMPTY_LIST);
         e.v.pop_back();
         e.Add(e1);
         return e;
       }
-      return {};
     default:
       assert(false);
   }
   return {};
 }
 
-Expression Apply(FunctionType ftype, const Expression& e0, const Expression& e1,
-                 const Expression& e2) {
+Expression Evaluate(FunctionType ftype, Expression& e0, Expression& e1,
+                    Expression& e2) {
   assert(ExpectedParameters(ftype) == 3);
   Expression e;
   switch (ftype) {
@@ -205,23 +220,25 @@ Expression Apply(FunctionType ftype, const Expression& e0, const Expression& e1,
       e.Add(e1);
       return e;
     case FunctionType::IF0:
-      return e0.IsNumber() ? (e0.GetNumber() ? e2 : e1) : Expression();
+      e0.Evaluate();
+      assert(e0.IsNumber());
+      return e0.GetNumber() ? e2 : e1;
     default:
       assert(false);
   }
   return {};
 }
 
-Expression Apply(FunctionType ftype, const std::vector<Expression>& v) {
+Expression Evaluate(FunctionType ftype, std::vector<Expression>& v) {
   switch (v.size()) {
     case 0:
-      return Apply(ftype);
+      return Evaluate(ftype);
     case 1:
-      return Apply(ftype, v[0]);
+      return Evaluate(ftype, v[0]);
     case 2:
-      return Apply(ftype, v[0], v[1]);
+      return Evaluate(ftype, v[0], v[1]);
     case 3:
-      return Apply(ftype, v[0], v[1], v[2]);
+      return Evaluate(ftype, v[0], v[1], v[2]);
     default:
       assert(false);
       return {};

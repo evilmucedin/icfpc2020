@@ -15,24 +15,24 @@ namespace {
 std::string messages_dir = "../src/mfs/messages/";
 }
 
-void ReadPNG(const std::string& filename) {
-  // MessageAsImage::PrintPNG(filename);
-  MessageAsImage mi(filename);
-  // mi.Print();
-  MessageDecoder md(GlyphDecoder::GetDecoder());
-  Message m = md.Decode(mi);
-  m.Print();
-}
+// void ReadPNG(const std::string& filename) {
+//   // MessageAsImage::PrintPNG(filename);
+//   MessageAsImage mi(filename);
+//   // mi.Print();
+//   MessageDecoder md(GlyphDecoder::GetDecoder());
+//   Message m = md.Decode(mi);
+//   m.Print();
+// }
 
-void ReadText(const std::string& filename) {
-  MessageAsText mt(filename);
-  MessageDecoder md(GlyphDecoder::GetDecoder());
-  Message m = md.Decode(mt);
-  m.Print();
-  cout << endl;
-  m.Compress();
-  m.Print();
-}
+// void ReadText(const std::string& filename) {
+//   MessageAsText mt(filename);
+//   MessageDecoder md(GlyphDecoder::GetDecoder());
+//   Message m = md.Decode(mt);
+//   m.Print();
+//   cout << endl;
+//   m.Compress();
+//   m.Print();
+// }
 
 void ProcessGalaxy(const std::string& filename) {
   MessageAsText mt(filename);
@@ -43,14 +43,13 @@ void ProcessGalaxy(const std::string& filename) {
 }
 
 int main(int argc, char* argv[]) {
-  string s = "1";
+  ProcessGalaxy("../src/mfs/messages/galaxy.txt");
   if (argc >= 2) {
-    s = argv[1];
-    // ReadPNG("../src/mfs/messages/message" + s + ".png");
-    // cout << endl;
-    ReadText("../src/mfs/messages/message" + s + "-decoded.txt");
-  } else {
-    ProcessGalaxy("../src/mfs/messages/galaxy.txt");
+    MessageDecoder md(GlyphDecoder::GetDecoder());
+    Expression e = md.DecodeExpression(argv[1]);
+    e.Evaluate();
+    e.Print();
+    cout << endl;
   }
   // GlyphDecoder gd = GlyphDecoder::GetDecoder();
   //   for (int64_t i = -10; i < 30; ++i) {
