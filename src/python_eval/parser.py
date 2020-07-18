@@ -21,6 +21,8 @@ class F:
         self.apply = apply
     
     def __call__(self, *new_args):
+        if self.arity == 0:
+            return self.eager()(*new_args)
         if self.arity >= len(new_args):
             return F(self.name, self.arity - len(new_args), self.apply, self.args + new_args)
         else:
@@ -43,10 +45,24 @@ class F:
 def cons_f(x, xs, f):
     return f(x, xs)
 
+def code(val, append_to=None):
+    if append_to is None:
+        ar = []
+        code(val, ar)
+        return ' '.join(ar)
+    if isinstance(val, F):
+        for i in range(len(val.args)):
+            append_to.append('ap')
+        append_to.append(val.name)
+        for arg in val.args:
+            code(arg, append_to)
+    else:
+        append_to.append(str(val))
+
 true = F('t', 2, lambda x, y: x)
 false = F('f', 2, lambda x, y: y)
 
-nil = F('nil', 2, lambda x, y: y)
+nil = F('nil', 1, lambda x: true)
 cons = F('cons', 3, cons_f)
 vec = F('vec', 3, cons_f)
 car = F('car', 1, lambda lst: lst(true))
@@ -131,18 +147,22 @@ def to_python(val):
             a = to_python(val.args[0])
             b = to_python(val.args[1])
             return (a, b)
+        else:
+            assert False
     else:
         return val
 
 # print(eager(symbols[':1128'](cons(10, cons(10, cons(10, nil)))), deep=True))
 # print(eager(symbols['galaxy'](cons(0, nil), vec(0, 0)), deep=True))
 
-def draw(points, out):
+def draw(points, out, color=(255, 255, 255)):
     if not points:
         print(f'empty points for {out}')
         return
-    minx, miny = points[0]
-    maxx, maxy = points[0]
+    minx, miny = -160, -160
+    maxx, maxy = 160, 160
+    # minx, miny = points[0]
+    # maxx, maxy = points[0]
     for x, y in points:
         minx = min(minx, x)
         maxx = max(maxx, x)
@@ -151,18 +171,31 @@ def draw(points, out):
     im = Image.new("RGB", (maxx - minx + 1, maxy - miny + 1), 'black')
     pixels = im.load()
     for x, y in points:
-        pixels[x - minx, y - miny] = (255, 255, 255)
+        pixels[x - minx, y - miny] = color
     im.save(out)
 
-# it = cons(0, cons(cons(2, nil), cons(0, cons(nil, nil))))
-it = nil
-it = cons(nil, cons(it, nil))
-for iter in range(10):
-    # print(eager(car(cdr(it)), deep=True))
-    it = symbols['galaxy'](car(cdr(it)), vec(0, 0))
-    flag, state, data = to_python(it)
-    print(flag, state, data)
+override_vec = {
+    3: vec(8, 4),
+    4: vec(2, -8),
+    5: vec(3, 6),
+    6: vec(0, -14),
+    7: vec(-4, 10),
+    8: vec(9, -3),
+    9: vec(-4, 10),
+    10: vec(1, 4),
+}
+
+state = cons(1, cons(cons(1, nil), cons(0, cons(nil, nil))))
+# state = cons(2, cons(cons(1, cons(-1, nil)), cons(0, cons(nil, nil))))
+for iter in range(12):
+    os.makedirs(f'{iter}', exist_ok=True)
+    coords = vec(0, 0)
+    if iter in override_vec:
+        coords = override_vec[iter]
+    it = symbols['galaxy'](state, coords)
+    state = eager(car(cdr(it)), deep=True)
+    flag, st, data = to_python(it)
+    print(flag, st, data)
     for i, imgData in enumerate(data):
         fn = f'{iter}/{i}.png'
-        os.makedirs(f'{iter}', exist_ok=True)
         draw(imgData, fn)
