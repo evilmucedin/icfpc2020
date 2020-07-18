@@ -1,7 +1,13 @@
 import sys
-from PIL import Image
+from PIL import Image, ImageTk
+from interaction import send
 import os
+import tkinter as tk
 sys.setrecursionlimit(1000000)
+
+HALF_WIDTH, HALF_HEIGHT = 196, 196
+COLORS = [(255, 255, 255), (196, 196, 196), (128, 128, 128), (64, 64, 64), (32, 32, 32), (16, 16, 16), (8, 8, 8), (4, 4, 4), (2, 2, 2)]
+SCALE_FACTOR = 3
 
 with open('src/mfs/messages/galaxy.txt', 'rt') as f:
     lines = [line.strip().split(' ') for line in f]
@@ -21,6 +27,8 @@ class F:
         self.apply = apply
     
     def __call__(self, *new_args):
+        if self.arity == 0:
+            return self.eager()(*new_args)
         if self.arity >= len(new_args):
             return F(self.name, self.arity - len(new_args), self.apply, self.args + new_args)
         else:
@@ -30,7 +38,11 @@ class F:
     def __repr__(self):
         if not self.args:
             return self.name
-        return f"({self.name} {' '.join(str(arg) for arg in self.args)})"
+        lines = ['(' + self.name]
+        for arg in self.args:
+            lines.extend(' ' + line for line in repr(arg).split('\n'))
+        lines[-1] = lines[-1] + ')'
+        return '\n'.join(lines)
     
     def eager(self):
         if hasattr(self, 'cache'):
@@ -43,10 +55,24 @@ class F:
 def cons_f(x, xs, f):
     return f(x, xs)
 
+def code(val, append_to=None):
+    if append_to is None:
+        ar = []
+        code(val, ar)
+        return ' '.join(ar)
+    if isinstance(val, F):
+        for i in range(len(val.args)):
+            append_to.append('ap')
+        append_to.append(val.name)
+        for arg in val.args:
+            code(arg, append_to)
+    else:
+        append_to.append(str(val))
+
 true = F('t', 2, lambda x, y: x)
 false = F('f', 2, lambda x, y: y)
 
-nil = F('nil', 2, lambda x, y: y)
+nil = F('nil', 1, lambda x: true)
 cons = F('cons', 3, cons_f)
 vec = F('vec', 3, cons_f)
 car = F('car', 1, lambda lst: lst(true))
@@ -69,6 +95,17 @@ def _isnil(lst):
     assert isinstance(lst, F) and lst.name in ('nil', 'cons', 'vec'), f'{lst} is not valid argument for isnil'
     return true if lst.name == 'nil' else false
 
+def _bottom():
+    raise AssertionError()
+bottom = F('bottom', 0, _bottom)
+
+def s(x, y, z):
+    try:
+        w = y(z)
+    except:
+        w  = bottom
+    return x(z, w)
+
 toplevel = {
     't': true,
     'f': false,
@@ -77,12 +114,14 @@ toplevel = {
     'vec': vec,
     'car': car,
     'cdr': cdr,
+    'inc': F('inc', 1, lambda x: eager(x) + 1),
+    'dec': F('dec', 1, lambda x: eager(x) - 1),
     'neg': F('neg', 1, lambda x: -eager(x)),
     'add': F('add', 2, lambda x, y: eager(x) + eager(y)),
     'mul': F('mul', 2, lambda x, y: eager(x) * eager(y)),
     'eq': F('eq', 2, lambda x, y: true if eager(x) == eager(y) else false),
     'lt': F('lt', 2, lambda x, y: true if eager(x) < eager(y) else false),
-    's': F('s', 3, lambda x, y, z: x(z, y(z))),
+    's': F('s', 3, s),
     'c': F('c', 3, lambda x, y, z: x(z, y)),
     'b': F('b', 3, lambda x, y, z: x(y(z))),
     'i': F('i', 1, lambda x: x),
@@ -131,38 +170,80 @@ def to_python(val):
             a = to_python(val.args[0])
             b = to_python(val.args[1])
             return (a, b)
+        else:
+            assert False
     else:
         return val
 
-# print(eager(symbols[':1128'](cons(10, cons(10, cons(10, nil)))), deep=True))
-# print(eager(symbols['galaxy'](cons(0, nil), vec(0, 0)), deep=True))
+def from_python(x):
+    if type(x) == list:
+        if len(x) == 0:
+            return nil
+        else:
+            return cons(from_python(x[0]), from_python(x[1:]))
+    elif type(x) == tuple:
+        assert len(x) == 2, x
+        return vec(from_python(x[0]), from_python(x[1]))
+    else:
+        assert type(x) == int, x
+        return x
 
-def draw(points, out):
-    if not points:
-        print(f'empty points for {out}')
-        return
-    minx, miny = points[0]
-    maxx, maxy = points[0]
-    for x, y in points:
-        minx = min(minx, x)
-        maxx = max(maxx, x)
-        miny = min(miny, y)
-        maxy = max(maxy, y)
-    im = Image.new("RGB", (maxx - minx + 1, maxy - miny + 1), 'black')
+override_vec = {
+    3: vec(8, 4),
+    4: vec(2, -8),
+    5: vec(3, 6),
+    6: vec(0, -14),
+    7: vec(-4, 10),
+    8: vec(9, -3),
+    9: vec(-4, 10),
+    10: vec(1, 4),
+}
+
+def drawState(state, click_x, click_y):
+    in_data = vec(click_x, click_y)
+    while True:
+        try:
+            raw_result = symbols['galaxy'](state, in_data)
+            flag, st, data = to_python(raw_result)
+            state = eager(car(cdr(raw_result)), deep=True)
+        except Exception as e:
+            print('CANNOT EVAL: ', state)
+            raise
+        if flag == 0:
+            break
+        else:
+            in_data = from_python(send(data))
+    im = Image.new("RGB", (2 * HALF_WIDTH + 1, 2 * HALF_HEIGHT + 1), 'black')
     pixels = im.load()
-    for x, y in points:
-        pixels[x - minx, y - miny] = (255, 255, 255)
-    im.save(out)
+    for ci, points in reversed(list(enumerate(data))):
+        for x, y in points:
+            # assert -HALF_WIDTH <= x <= HALF_WIDTH
+            # assert -HALF_HEIGHT <= y <= HALF_HEIGHT
+            pixels[x + HALF_WIDTH, y + HALF_HEIGHT] = COLORS[ci]
+    return state, im
 
-# it = cons(0, cons(cons(2, nil), cons(0, cons(nil, nil))))
-it = nil
-it = cons(nil, cons(it, nil))
-for iter in range(10):
-    # print(eager(car(cdr(it)), deep=True))
-    it = symbols['galaxy'](car(cdr(it)), vec(0, 0))
-    flag, state, data = to_python(it)
-    print(flag, state, data)
-    for i, imgData in enumerate(data):
-        fn = f'{iter}/{i}.png'
-        os.makedirs(f'{iter}', exist_ok=True)
-        draw(imgData, fn)
+root = tk.Tk()
+
+def on_click(event):
+    process_click(event.x // SCALE_FACTOR - HALF_WIDTH, event.y // SCALE_FACTOR - HALF_HEIGHT)
+
+w = tk.Canvas(root, width=SCALE_FACTOR * (2 * HALF_WIDTH + 1), height=SCALE_FACTOR * (2 * HALF_HEIGHT + 1))
+w.bind("<Button-1>", on_click)
+w.pack()
+
+# state = nil
+# state = cons(1, cons(cons(1, nil), cons(0, cons(nil, nil))))
+state = cons(2, cons(cons(1, cons(-1, nil)), cons(0, cons(nil, nil))))
+# state = from_python([5, [2, 0, [], [], [], [], [], 50406], 8, []])
+
+def process_click(x, y):
+    global state, img
+    print(f'click at {x}:{y} at state {to_python(state)}')
+    state, img = drawState(state, x, y)
+    img = img.resize((SCALE_FACTOR * (2 * HALF_WIDTH + 1), SCALE_FACTOR * (2 * HALF_HEIGHT + 1)), resample=Image.BOX)
+    img = ImageTk.PhotoImage(img)
+    w.create_image(0, 0, image=img, anchor="nw")
+
+process_click(-100, -100)
+
+root.mainloop()
