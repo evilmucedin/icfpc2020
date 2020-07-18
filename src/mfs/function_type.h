@@ -32,5 +32,6 @@ enum class FunctionType {
   GALAXY_FILE = 100,
   LOG2 = 101,
   LENGTH = 102,
+  CONCAT = 103,
   END
 };

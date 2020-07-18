@@ -110,6 +110,7 @@ void GlyphDecoder::InitMap() {
                            28 * rows[6]);
   RegisterFunctionType(FunctionType::LOG2, "log2", 0);
   RegisterFunctionType(FunctionType::LENGTH, "length", 0);
+  RegisterFunctionType(FunctionType::CONCAT, "concat", 0);
 }
 
 Glyph GlyphDecoder::Decode(const GlyphCompact& gc) const {
