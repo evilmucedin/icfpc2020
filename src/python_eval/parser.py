@@ -5,9 +5,9 @@ import os
 import tkinter as tk
 sys.setrecursionlimit(1000000)
 
-HALF_WIDTH, HALF_HEIGHT = 160, 160
-COLORS = [(255, 255, 255), (196, 196, 196), (128, 128, 128), (64, 64, 64)]
-SCALE_FACTOR = 4
+HALF_WIDTH, HALF_HEIGHT = 196, 196
+COLORS = [(255, 255, 255), (196, 196, 196), (128, 128, 128), (64, 64, 64), (32, 32, 32), (16, 16, 16), (8, 8, 8), (4, 4, 4), (2, 2, 2)]
+SCALE_FACTOR = 3
 
 with open('src/mfs/messages/galaxy.txt', 'rt') as f:
     lines = [line.strip().split(' ') for line in f]
@@ -183,7 +183,7 @@ override_vec = {
 }
 
 def drawState(state, click_x, click_y):
-    in_data = vec(click_x, click_y)
+    in_data = vec(-click_x, -click_y)
     while True:
         raw_result = symbols['galaxy'](state, in_data)
         flag, st, data = to_python(raw_result)
@@ -196,9 +196,9 @@ def drawState(state, click_x, click_y):
     pixels = im.load()
     for ci, points in reversed(list(enumerate(data))):
         for x, y in points:
-            assert -HALF_WIDTH <= x <= HALF_WIDTH
-            assert -HALF_HEIGHT <= x <= HALF_HEIGHT
-            pixels[x + HALF_WIDTH, y + HALF_HEIGHT] = COLORS[ci]
+            # assert -HALF_WIDTH <= x <= HALF_WIDTH
+            # assert -HALF_HEIGHT <= y <= HALF_HEIGHT
+            pixels[-x + HALF_WIDTH, -y + HALF_HEIGHT] = COLORS[ci]
     return state, im
 
 root = tk.Tk()
@@ -212,8 +212,8 @@ w.pack()
 
 # state = nil
 # state = cons(1, cons(cons(1, nil), cons(0, cons(nil, nil))))
-# state = cons(2, cons(cons(1, cons(-1, nil)), cons(0, cons(nil, nil))))
-state = from_python([5, [2, 0, [], [], [], [], [], 50406], 8, []])
+state = cons(2, cons(cons(1, cons(-1, nil)), cons(0, cons(nil, nil))))
+# state = from_python([5, [2, 0, [], [], [], [], [], 50406], 8, []])
 
 def process_click(x, y):
     global state, img
@@ -223,6 +223,6 @@ def process_click(x, y):
     img = ImageTk.PhotoImage(img)
     w.create_image(0, 0, image=img, anchor="nw")
 
-process_click(0, 0)
+process_click(-100, -100)
 
 root.mainloop()
