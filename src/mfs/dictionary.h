@@ -1,6 +1,8 @@
 #pragma once
 
-#include "expression.h"
+#include "function_type.h"
+#include "node.h"
 
-void AddToDictionary(unsigned index, const Expression& e);
-const Expression& GetFromDictionary(unsigned index);
+void AddToDictionary(unsigned index, Node* node);
+Node* GetFromDictionary(unsigned index);
+Node* GetFromDictionary(FunctionType ftype);

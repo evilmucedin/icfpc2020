@@ -11,6 +11,8 @@
 
 #include <string>
 
+void TestAll(const std::string& filename);
+
 namespace {
 std::string messages_dir = "../src/mfs/messages/";
 }
@@ -36,16 +38,17 @@ std::string messages_dir = "../src/mfs/messages/";
 
 void ProcessGalaxy(const std::string& filename) {
   MessageAsText mt(filename);
-  MessageDecoder md(GlyphDecoder::GetDecoder());
+  MessageDecoder md;
   Message m = md.Decode(mt);
   cout << m.v.size() << endl;
   m.Process();
 }
 
 int main(int argc, char* argv[]) {
-  ProcessGalaxy("../src/mfs/messages/galaxy.txt");
+  ProcessGalaxy(messages_dir + "galaxy.txt");
+  TestAll(messages_dir + "test.txt");
   if (argc >= 2) {
-    MessageDecoder md(GlyphDecoder::GetDecoder());
+    MessageDecoder md;
     Expression e = md.DecodeExpression(argv[1]);
     e.Evaluate();
     e.Print();

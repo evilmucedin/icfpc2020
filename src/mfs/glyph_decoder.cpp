@@ -43,7 +43,7 @@ void GlyphDecoder::InitMap() {
   RegisterGlyphType(GlyphType::DOT, "...", MASK_DOT);
   RegisterGlyphType(GlyphType::EQUALITY, "=",
                     7 * rows[0] + rows[1] + 7 * rows[2]);
-  RegisterGlyphType(GlyphType::OPERAND, "ap", 3 * rows[0] + rows[1]);
+  RegisterGlyphType(GlyphType::UP, "ap", 3 * rows[0] + rows[1]);
   RegisterFunctionType(FunctionType::SUCCESSOR, "inc",
                        15 * rows[0] + 3 * rows[1] + 9 * rows[2] + 13 * rows[3]);
   RegisterFunctionType(FunctionType::PREDECESSOR, "dec",
@@ -117,7 +117,9 @@ Glyph GlyphDecoder::Decode(const GlyphCompact& gc) const {
   if (gc.mask == MASK_DOT) return {GlyphType::DOT};
   if ((gc.mask & 131) == 130) return {GlyphType::NUMBER, DecodeNumber(gc.mask)};
   auto itf = map_mask_function_type.find(gc.mask);
-  if (itf != map_mask_function_type.end()) return {itf->second};
+  if (itf != map_mask_function_type.end())
+    return {itf->second != FunctionType::VECTOR ? itf->second
+                                                : FunctionType::CONS__PAIR};
   auto itg = map_mask_glyph_type.find(gc.mask);
   if (itg != map_mask_glyph_type.end()) return {itg->second};
   if (IsVariable(gc.mask))
@@ -213,7 +215,9 @@ uint64_t GlyphDecoder::EncodeVariable(int64_t value) const {
 Glyph GlyphDecoder::Decode(const std::string& name) {
   assert(name.size() > 0);
   auto itf = map_id_function_type.find(name);
-  if (itf != map_id_function_type.end()) return {itf->second};
+  if (itf != map_id_function_type.end())
+    return {itf->second != FunctionType::VECTOR ? itf->second
+                                                : FunctionType::CONS__PAIR};
   auto itg = map_id_glyph_type.find(name);
   if (itg != map_id_glyph_type.end()) return {itg->second};
   if (name[0] == 'x') return {GlyphType::VARIABLE, std::stoll(name.substr(1))};
