@@ -6,7 +6,7 @@ import tkinter as tk
 sys.setrecursionlimit(1000000)
 
 HALF_WIDTH, HALF_HEIGHT = 160, 160
-COLORS = [(255, 255, 255), (255, 0, 0), (0, 255, 0), (0, 0, 255)]
+COLORS = [(255, 255, 255), (196, 196, 196), (128, 128, 128), (64, 64, 64)]
 SCALE_FACTOR = 4
 
 with open('src/mfs/messages/galaxy.txt', 'rt') as f:
@@ -194,7 +194,7 @@ def drawState(state, click_x, click_y):
             in_data = from_python(send(data))
     im = Image.new("RGB", (2 * HALF_WIDTH + 1, 2 * HALF_HEIGHT + 1), 'black')
     pixels = im.load()
-    for ci, points in enumerate(data):
+    for ci, points in reversed(list(enumerate(data))):
         for x, y in points:
             assert -HALF_WIDTH <= x <= HALF_WIDTH
             assert -HALF_HEIGHT <= x <= HALF_HEIGHT
@@ -212,7 +212,8 @@ w.pack()
 
 # state = nil
 # state = cons(1, cons(cons(1, nil), cons(0, cons(nil, nil))))
-state = cons(2, cons(cons(1, cons(-1, nil)), cons(0, cons(nil, nil))))
+# state = cons(2, cons(cons(1, cons(-1, nil)), cons(0, cons(nil, nil))))
+state = from_python([5, [2, 0, [], [], [], [], [], 50406], 8, []])
 
 def process_click(x, y):
     global state, img
