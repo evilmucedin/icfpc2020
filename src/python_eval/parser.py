@@ -233,8 +233,9 @@ w.pack()
 
 # state = nil
 # state = cons(1, cons(cons(1, nil), cons(0, cons(nil, nil))))
-state = cons(2, cons(cons(1, cons(-1, nil)), cons(0, cons(nil, nil))))
-# state = from_python([5, [2, 0, [], [], [], [], [], 50406], 8, []])
+# state = cons(2, cons(cons(1, cons(-1, nil)), cons(0, cons(nil, nil))))
+state = from_python([5, [2, 0, [], [], [], [], [], 44309], 9, []])
+# state = from_python([6, [5, 8, 6725791729228031769, 0, 11, 0, [], [], 4, [0, [], [[[1, 1, (16, 86), (0, 0), [32, 0, 0, 1], 0, 64, 1], []], [[0, 0, (0, 16), (0, 0), [6, 0, 4, 1], 60, 64, 1], []]]], [16, 0, [512, 1, 64], [], []], [], []], 8, []])
 
 def process_click(x, y):
     global state, img
