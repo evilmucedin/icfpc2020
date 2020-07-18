@@ -44,7 +44,7 @@ def cons_f(x, xs, f):
     return f(x, xs)
 
 true = F('t', 2, lambda x, y: x)
-false = F('t', 2, lambda x, y: y)
+false = F('f', 2, lambda x, y: y)
 
 nil = F('nil', 2, lambda x, y: y)
 cons = F('cons', 3, cons_f)
