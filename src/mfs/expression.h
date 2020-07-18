@@ -1,35 +1,27 @@
 #pragma once
 
 #include "glyph.h"
+#include "node.h"
 
 #include <vector>
 
 class Expression {
  public:
   std::vector<Glyph> v;
+  Node* root = nullptr;
 
   Expression();
   explicit Expression(const Glyph& g);
-  explicit Expression(int64_t value);
 
-  bool Empty() const;
-  bool operator==(const Expression& r) const;
+ protected:
+  Node* MakeNodeI(unsigned& index);
 
-  bool IsNumber() const;
-  int64_t GetNumber() const;
-  bool IsLEF() const;
-  LEF GetLEF() const;
-  bool IsList() const;
-
+ public:
   void Add(const Glyph& g);
-  void Add(const Expression& e);
-
-  void ReplaceAlias(unsigned index);
-  Expression GetOne(unsigned index, unsigned count = 1);
-  bool EvaluateOnce();
+  Node* MakeRoot();
+  void MakeVector();
   void Evaluate();
-
-  void Compress();
-
   void Print() const;
+
+  bool operator==(const Expression& r) const;
 };

@@ -1,8 +1,12 @@
 #include "message_decoder.h"
 
+#include "glyph_decoder.h"
+
 #include "common/base.h"
 #include "common/linear_algebra/bool/vector.h"
 #include "common/string/utils/split.h"
+
+MessageDecoder::MessageDecoder() : gd(GlyphDecoder::GetDecoder()) {}
 
 MessageDecoder::MessageDecoder(GlyphDecoder& _gd) : gd(_gd) {}
 

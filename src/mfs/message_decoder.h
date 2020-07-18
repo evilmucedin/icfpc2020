@@ -21,6 +21,7 @@ class MessageDecoder {
  public:
   using TMatrixSlice = MatrixSlice<la::MatrixBool>;
 
+  MessageDecoder();
   MessageDecoder(GlyphDecoder& _gd);
 
   const TMatrixSlice Compress(const TMatrixSlice& ms);

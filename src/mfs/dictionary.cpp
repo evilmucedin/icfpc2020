@@ -1,26 +1,32 @@
 #include "dictionary.h"
 
+#include "node.h"
+
 #include "common/base.h"
 
 #include <unordered_map>
 
 namespace {
-std::unordered_map<unsigned, Expression> dict;
+std::unordered_map<unsigned, Node*> dict;
+std::unordered_map<FunctionType, Node*> fdict;
 }  // namespace
 
-void AddToDictionary(unsigned index, const Expression& e) {
+void AddToDictionary(unsigned index, Node* node) {
   auto it = dict.find(index);
   assert(it == dict.end());
-  unsigned ats = 0;
-  for (auto& g : e.v) {
-    if (g.type == GlyphType::OPERAND) ++ats;
-  }
-  assert(e.v.size() == 2 * ats + 1);
-  dict[index] = e;
+  dict[index] = node;
 }
 
-const Expression& GetFromDictionary(unsigned index) {
+Node* GetFromDictionary(unsigned index) {
   auto it = dict.find(index);
   assert(it != dict.end());
   return it->second;
+}
+
+Node* GetFromDictionary(FunctionType ftype) {
+  auto it = fdict.find(ftype);
+  if (it == fdict.end())
+    return fdict[ftype] = NewNode(Glyph(ftype));
+  else
+    return it->second;
 }

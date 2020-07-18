@@ -5,11 +5,6 @@
 #include "common/base.h"
 
 #include <algorithm>
-#include <iostream>
-
-void Message::Compress() {
-  for (auto& l : v) l.Compress();
-}
 
 void Message::Process() {
   // Manual functions
@@ -25,11 +20,10 @@ void Message::Process() {
     assert(vvv[1].type == GlyphType::EQUALITY);
     if (vvv[0].ftype == FunctionType::GALAXY)
       vvv[0] = Glyph(GlyphType::ALIAS, 0);
-    if (vvv[0].type == GlyphType::ALIAS) {
-      Expression e;
-      for (unsigned j = 2; j < vvv.size(); ++j) e.Add(vvv[j]);
-      AddToDictionary(vvv[0].value, e);
-    }
+    assert(vvv[0].type == GlyphType::ALIAS);
+    Expression e;
+    for (unsigned j = 2; j < vvv.size(); ++j) e.Add(vvv[j]);
+    AddToDictionary(vvv[0].value, e.MakeRoot());
   }
 }
 

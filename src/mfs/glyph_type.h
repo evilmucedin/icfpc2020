@@ -5,7 +5,7 @@ enum class GlyphType {
   ONE,
   DOT,
   EQUALITY,
-  OPERAND,
+  UP,
   FUNCTION,
   VARIABLE,
   LINEAR_ENCODED_FORM,
