@@ -152,6 +152,17 @@ def to_python(val):
     else:
         return val
 
+
+def from_python(x):
+    if type(x) == list:
+        if len(x) == 0:
+            return nil
+        else:
+            return cons(from_python(x[0]), from_python(x[1:]))
+    else:
+        assert type(x) == int, x
+        return x
+
 # print(eager(symbols[':1128'](cons(10, cons(10, cons(10, nil)))), deep=True))
 # print(eager(symbols['galaxy'](cons(0, nil), vec(0, 0)), deep=True))
 
