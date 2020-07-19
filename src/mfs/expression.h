@@ -1,9 +1,10 @@
 #pragma once
 
 #include "glyph.h"
-#include "node.h"
 
 #include <vector>
+
+class Node;
 
 class Expression {
  public:
@@ -21,10 +22,7 @@ class Expression {
   Node* MakeRoot();
   void MakeVector();
   void Evaluate();
-  void Print() const;
-
-  // Expression should be evaluated
-  static bool IsList(Node* node);
+  void Print();
 
   bool operator==(const Expression& r) const;
 };

@@ -8,5 +8,5 @@ class Line {
  public:
   std::vector<Expression> v;
 
-  void Print() const;
+  void Print();
 };

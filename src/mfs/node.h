@@ -13,3 +13,11 @@ class Node : public BaseNode {
 };
 
 Node* NewNode(const Glyph& g);
+
+// Expression should be evaluated
+bool IsNil(Node* node);
+bool IsPair(Node* node);
+bool IsPairOrNil(Node* node);
+bool IsList(Node* node);
+
+void Print(Node* node);

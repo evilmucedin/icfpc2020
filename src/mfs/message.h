@@ -9,5 +9,5 @@ class Message {
   std::vector<Line> v;
 
   void Process();
-  void Print() const;
+  void Print();
 };

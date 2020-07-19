@@ -26,12 +26,13 @@ enum class FunctionType {
   NIL__EMPTY_LIST = 28,
   IS_NIL = 29,
   VECTOR = 31,
+  DRAW = 32,
+  MULTIPLE_DRAW = 34,
   IF0 = 37,
+  INTERACT = 38,
   GALAXY = 42,
   // ...
-  GALAXY_FILE = 100,
-  LOG2 = 101,
-  LENGTH = 102,
-  CONCAT = 103,
+  MODEM = 101,
+  F38 = 102,
   END
 };
