@@ -1,7 +1,7 @@
 import requests
 import sys
 
-from orbiter import OribterStrategy
+from orbiter import OrbiterStrategy
 from interaction import send2
 
 def player(key, strategy, sender):
@@ -20,7 +20,7 @@ def main():
     player_key = sys.argv[2]
     print('ServerUrl: %s; PlayerKey: %s' % (server_url, player_key))
     sender = lambda msg: send2(msg, server_url=server_url)
-    strategy = OrbiterStrategy(shoot=True, printships=False, duplicate=False)
+    strategy = OrbiterStrategy(do_laser=True, printships=False, duplicate=False)
     player(int(player_key), strategy, sender=sender)
 
 
