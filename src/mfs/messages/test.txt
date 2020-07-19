@@ -102,8 +102,8 @@ ap mod 255   =   [255]
 ap mod -255   =   [-255]
 ap mod 256   =   [256]
 ap mod -256   =   [-256]
-# ap dem ap mod x0   =   x0
-# ap mod ap dem x0   =   x0
+ap dem ap mod 123987   =   123987
+ap mod ap dem [-17]  =   [-17]
 # ap send x0 =  x1
 # humans   x0                     aliens
 # humans   ~~~~~ ap mod x0        aliens
