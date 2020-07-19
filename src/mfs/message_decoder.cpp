@@ -94,7 +94,23 @@ Glyph MessageDecoder::DecodeGlyph(const std::string& s) { return gd.Decode(s); }
 Expression MessageDecoder::DecodeExpression(const std::string& s) {
   Expression e;
   auto vs = Split(s, ' ');
-  for (auto& g : vs) e.v.push_back(DecodeGlyph(g));
+  for (size_t i = 0; i < vs.size(); ++i) {
+    auto& g = vs[i];
+    if (g == "(") {
+      assert(i + 1 < vs.size());
+      if (vs[i + 1] != ")") {
+        e.v.push_back(Glyph(GlyphType::UP));
+        e.v.push_back(Glyph(GlyphType::UP));
+        e.v.push_back(Glyph(FunctionType::CONS__PAIR));
+      }
+    } else if (g == ",") {
+      e.v.push_back(Glyph(GlyphType::UP));
+      e.v.push_back(Glyph(GlyphType::UP));
+      e.v.push_back(Glyph(FunctionType::CONS__PAIR));
+    } else {
+      e.v.push_back(DecodeGlyph(g));
+    }
+  }
   return e;
 }
 

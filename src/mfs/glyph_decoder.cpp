@@ -230,6 +230,7 @@ Glyph GlyphDecoder::Decode(const std::string& name) {
     return {LEFEncodeNumber(std::stoll(name.substr(1, name.size() - 2)))};
   }
   if (name[0] == ':') return {GlyphType::ALIAS, std::stoll(name.substr(1))};
+  if (name == ")") return {FunctionType::NIL__EMPTY_LIST};
   return {GlyphType::NUMBER, std::stoll(name)};
 }
 
