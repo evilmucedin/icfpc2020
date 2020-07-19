@@ -22,9 +22,9 @@ class OrbiterStrategy(object):
             regen = 10
             lives = 2
         else:
-            laser = 0
+            laser = 16
             regen = 4
-            lives = 64
+            lives = 16
         fuel = joinres.budget - LASER_COST * laser - REGEN_COST * regen - LIVES_COST * lives
         return [fuel, laser, regen, lives]
 
