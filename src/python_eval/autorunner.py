@@ -66,17 +66,17 @@ class ShipState(collections.namedtuple('ShipState', 'player id x y vx vy fuel la
         return [0, self.id, (dx, dy)]
 
     def next_round_expected_speed(self):
-        dx = self.dx
-        dy = self.dy
+        vx = self.vx
+        vy = self.vy
         if abs(self.x) >= abs(self.y):
-            dx += 1 if x < 0 else -1
+            vx += 1 if x < 0 else -1
         if abs(self.y) >= abs(self.x):
-            dy += 1 if y < 0 else - 1
-        return dx, dy
+            vy += 1 if y < 0 else - 1
+        return vx, vy
     
     def next_round_expected_location(self):
-        dx, dy = self.next_round_expected_speed()
-        return self.x + dx, self.y + dy
+        vx, vy = self.next_round_expected_speed()
+        return self.x + vx, self.y + vy
 
 
 ship_state = ShipState.parse([1, 0, (-20, -10), (7, 0), [0, 3, 0, 1], 0, 64, 1])
