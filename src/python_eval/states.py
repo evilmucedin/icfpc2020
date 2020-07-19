@@ -51,7 +51,7 @@ DEFENDER = 1
 
 
 class Ship(
-    collections.namedtuple('Ship', 'player id x y vx vy fuel laser regen lives heat max_heat hzchto last_actions')):
+    collections.namedtuple('Ship', 'player id x y vx vy fuel laser regen lives heat max_heat max_dv last_actions')):
 
     @staticmethod
     def parse(d):
@@ -69,7 +69,7 @@ class Ship(
             d1[4][3],  # lives
             d1[5],  # heat
             d1[6],  # max_heat
-            d1[7],  # hzchto todo
+            d1[7],  # max_dv todo
             [ShipAction.parse(x) for x in d2])
 
     def total_hp(self):

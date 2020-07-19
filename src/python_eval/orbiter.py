@@ -17,9 +17,14 @@ class OrbiterStrategy(object):
 
     def pick_stats(self, res):
         joinres = JoinResult.parse(res)
-        laser = 64
-        regen = 10
-        lives = 2
+        if joinres.budget > 490: # atacker
+            laser = 64
+            regen = 10
+            lives = 2
+        else:
+            laser = 0
+            regen = 4
+            lives = 64
         fuel = joinres.budget - LASER_COST * laser - REGEN_COST * regen - LIVES_COST * lives
         return [fuel, laser, regen, lives]
 
@@ -109,6 +114,6 @@ class OrbiterStrategy(object):
                     power = self.asses_laser_power(my_ship, will_move, ex, ey)
                     if power > 0 and approach_speed < 1:
                         actions.append(my_ship.do_laser(ex, ey, power))
-                if next_dist < 7 and st.me == ATACKER and self.T > 7 and len(my_ships) >= len(enemy_ships):
+                if next_dist < 10 and st.me == ATACKER and self.T > 7 and len(my_ships) >= len(enemy_ships):
                     actions.append(my_ship.do_explode())
         return actions
