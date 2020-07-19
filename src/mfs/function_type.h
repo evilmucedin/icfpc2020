@@ -29,8 +29,10 @@ enum class FunctionType {
   DRAW = 32,
   MULTIPLE_DRAW = 34,
   IF0 = 37,
+  INTERACT = 38,
   GALAXY = 42,
   // ...
   MODEM = 101,
+  F38 = 102,
   END
 };

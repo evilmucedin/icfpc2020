@@ -53,6 +53,7 @@ unsigned ExpectedParameters(FunctionType ftype) {
     case FunctionType::STRICT_LESS:
     case FunctionType::K_COMBINATOR:
     case FunctionType::FALSE__SECOND:
+    case FunctionType::F38:
       return 2;
     case FunctionType::S_COMBINATOR:
     case FunctionType::C_COMBINATOR:
@@ -60,6 +61,7 @@ unsigned ExpectedParameters(FunctionType ftype) {
     case FunctionType::CONS__PAIR:
     case FunctionType::VECTOR:
     case FunctionType::IF0:
+    case FunctionType::INTERACT:
       return 3;
     default:
       return unsigned(-1);
@@ -292,6 +294,62 @@ Node* ApplyFunction(Node* node, std::vector<Node*>& current_path) {
     case FunctionType::FALSE__SECOND:
       p1->l = GetFromDictionary(FunctionType::I_COMBINATOR);
       return p1;
+    case FunctionType::F38: {
+      auto n01 = NewNode(GlyphType::AP);
+      n01->l = GetFromDictionary(FunctionType::CAR__FIRST);
+      n01->r = p1->r;
+      auto n02 = NewNode(GlyphType::AP);
+      n02->l = GetFromDictionary(FunctionType::IF0);
+      n02->r = n01;
+      auto n03 = NewNode(GlyphType::AP);
+      n03->l = GetFromDictionary(FunctionType::CDR__TAIL);
+      n03->r = p1->r;
+      auto n04 = NewNode(GlyphType::AP);
+      n04->l = GetFromDictionary(FunctionType::CAR__FIRST);
+      n04->r = n03;
+      auto n05 = NewNode(GlyphType::AP);
+      n05->l = GetFromDictionary(FunctionType::MODEM);
+      n05->r = n04;
+      auto n06 = NewNode(GlyphType::AP);
+      n06->l = GetFromDictionary(FunctionType::CONS__PAIR);
+      n06->r = n05;
+      auto n07 = NewNode(GlyphType::AP);
+      n07->l = GetFromDictionary(FunctionType::CDR__TAIL);
+      n07->r = n03;
+      auto n08 = NewNode(GlyphType::AP);
+      n08->l = GetFromDictionary(FunctionType::CAR__FIRST);
+      n08->r = n07;
+      auto n09 = NewNode(GlyphType::AP);
+      n09->l = GetFromDictionary(FunctionType::MULTIPLE_DRAW);
+      n09->r = n08;
+      auto n10 = NewNode(GlyphType::AP);
+      n10->l = GetFromDictionary(FunctionType::CONS__PAIR);
+      n10->r = n09;
+      auto n11 = NewNode(GlyphType::AP);
+      n11->l = n10;
+      n11->r = GetFromDictionary(FunctionType::NIL__EMPTY_LIST);
+      auto n12 = NewNode(GlyphType::AP);
+      n12->l = n06;
+      n12->r = n11;
+      auto n13 = NewNode(GlyphType::AP);
+      n13->l = n02;
+      n13->r = n12;
+      auto n14 = NewNode(GlyphType::AP);
+      n14->l = GetFromDictionary(FunctionType::INTERACT);
+      n14->r = p0->r;
+      auto n15 = NewNode(GlyphType::AP);
+      n15->l = n14;
+      n15->r = n05;
+      auto n16 = NewNode(GlyphType::AP);
+      n16->l = GetFromDictionary(FunctionType::SEND);
+      n16->r = n08;
+      auto n17 = NewNode(GlyphType::AP);
+      n17->l = n15;
+      n17->r = n16;
+      p1->l = n13;
+      p1->r = n17;
+      return p1;
+    };
     case FunctionType::S_COMBINATOR: {
       auto n1 = NewNode(GlyphType::AP);
       auto n2 = NewNode(GlyphType::AP);
@@ -334,6 +392,20 @@ Node* ApplyFunction(Node* node, std::vector<Node*>& current_path) {
       if (p0->r->data.value == 0) p2->r = p1->r;
       p2->l = GetFromDictionary(FunctionType::I_COMBINATOR);
       return p2;
+    case FunctionType::INTERACT: {
+      auto n1 = NewNode(GlyphType::AP);
+      auto n2 = NewNode(GlyphType::AP);
+      auto n3 = NewNode(GlyphType::AP);
+      n1->l = GetFromDictionary(FunctionType::F38);
+      n1->r = p0->r;
+      n2->l = p0->r;
+      n2->r = p1->r;
+      n3->l = n2;
+      n3->r = p2->r;
+      p2->l = n1;
+      p2->r = n3;
+      return p2;
+    }
     default:
       assert(false);
       return nullptr;
