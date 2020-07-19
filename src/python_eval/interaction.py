@@ -20,6 +20,7 @@ def send(data, debug=False):
     return res
 
 def send2(data):
+    print(f'Sending {data}')
     response = requests.post(f'https://icfpc2020-api.testkontur.ru/aliens/send?apiKey={API_KEY}', data=to_str(modulate_anything(data))).text
     res = demodulate(response)
     assert res[0] == 1, (data, res)
