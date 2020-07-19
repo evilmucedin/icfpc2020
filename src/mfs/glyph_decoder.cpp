@@ -108,6 +108,10 @@ void GlyphDecoder::InitMap() {
   RegisterFunctionType(FunctionType::DRAW, "draw",
                        63 * rows[0] + 33 * rows[1] + 33 * rows[2] +
                            33 * rows[3] + 33 * rows[4] + 63 * rows[5]);
+  RegisterFunctionType(FunctionType::MULTIPLE_DRAW, "multipledraw",
+                       127 * rows[0] + 73 * rows[1] + 73 * rows[2] +
+                           127 * rows[3] + 73 * rows[4] + 73 * rows[5] +
+                           127 * rows[6]);
   RegisterFunctionType(
       FunctionType::IF0, "if0",
       31 * rows[0] + 1 * rows[1] + 29 * rows[2] + 7 * rows[3] + 29 * rows[4]);

@@ -43,6 +43,7 @@ unsigned ExpectedParameters(FunctionType ftype) {
     case FunctionType::NIL__EMPTY_LIST:
     case FunctionType::IS_NIL:
     case FunctionType::DRAW:
+    case FunctionType::MULTIPLE_DRAW:
       return 1;
     case FunctionType::SUM:
     case FunctionType::PRODUCT:
@@ -159,6 +160,29 @@ Node* ApplyFunction(Node* node, std::vector<Node*>& current_path) {
         p0->data.pic.AddPixel(p.first, p.second);
       }
       p0->data.type = GlyphType::PICTURE;
+      return p0;
+    }
+    case FunctionType::MULTIPLE_DRAW: {
+      Evaluate(p0->r);
+      if ((p0->r->data.type == GlyphType::FUNCTION) &&
+          ((p0->r->data.ftype == FunctionType::NIL__EMPTY_LIST))) {
+        p0->l = GetFromDictionary(FunctionType::I_COMBINATOR);
+      } else {
+        assert(p0->r->data.type == GlyphType::AP);
+        assert(p0->r->l->data.type == GlyphType::AP);
+        assert(p0->r->l->l->data.ftype == FunctionType::CONS__PAIR);
+        auto n1 = NewNode(GlyphType::AP);
+        auto n2 = NewNode(GlyphType::AP);
+        auto n3 = NewNode(GlyphType::AP);
+        n1->l = GetFromDictionary(FunctionType::DRAW);
+        n1->r = p0->r->l->r;
+        n2->l = p0->r->l->l;
+        n2->r = n1;
+        n3->l = p0->l;
+        n3->r = p0->r->r;
+        p0->l = n2;
+        p0->r = n3;
+      }
       return p0;
     }
     case FunctionType::SUM:

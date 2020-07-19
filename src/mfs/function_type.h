@@ -27,6 +27,7 @@ enum class FunctionType {
   IS_NIL = 29,
   VECTOR = 31,
   DRAW = 32,
+  MULTIPLE_DRAW = 34,
   IF0 = 37,
   GALAXY = 42,
   // ...
