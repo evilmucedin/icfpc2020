@@ -116,7 +116,7 @@ class State(collections.namedtuple('State', 'step me planet_size field_size ship
 
 def id_strategy(state):
     print('= ID STRATEGY =')
-    parsed_state = State(state)
+    State.parse(state)
     print('===============')
 
     return []
