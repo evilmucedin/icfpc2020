@@ -13,8 +13,8 @@ class OrbiterStrategy(object):
 
     def pick_stats(self, res):
         joinres = JoinResult.parse(res)
-        laser = 60
-        regen = 14
+        laser = 64
+        regen = 10
         lives = 1
         fuel = joinres.budget - LASER_COST * laser - REGEN_COST * regen - LIVES_COST * lives
         return [fuel, laser, regen, lives]
