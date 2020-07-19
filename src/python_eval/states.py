@@ -40,11 +40,15 @@ class ShipAction(collections.namedtuple('ShipAction', [])):
             return Thrust(d[1][0], d[1][1])
         if d[0] == 1:
             return Explode()
-        if d[1] == 2:
+        if d[0] == 2:
             return Laser(d[1][1], d[1][1], d[2], d[3], d[4])
 
 
 # ==============================================================================================================================
+
+ATACKER = 0
+DEFENDER = 1
+
 
 class Ship(
     collections.namedtuple('Ship', 'player id x y vx vy fuel laser regen lives heat max_heat hzchto last_actions')):
@@ -98,12 +102,14 @@ class Ship(
         vx, vy = self.next_round_expected_speed(thrust)
         return self.x + vx, self.y + vy
 
-    def approach_speed(self, thrust, other, other_thrust):
-        curr_d = dist(self.x - other.x, self.y - other.y)
+    def approach_speed(self, other, next_dist):
+        curr_dist = dist(self.x - other.x, self.y - other.y)
+        return curr_dist - next_dist
+
+    def next_dist(self, thrust, other, other_thrust):
         sx, sy = self.next_round_expected_location(thrust)
         ox, oy = other.next_round_expected_location(other_thrust)
-        next_d = dist(sx - ox, sy - oy)
-        return curr_d - next_d
+        return dist(sx - ox, sy - oy)
 
 
 ship = Ship.parse([[1, 0, (-20, -10), (7, 0), [0, 3, 0, 1], 0, 64, 1], []])
@@ -113,11 +119,13 @@ assert ship.laser == 3
 
 s1 = Ship.parse([[1, 0, (-20, -10), (7, 0), [0, 3, 0, 1], 0, 64, 1], []])
 s2 = Ship.parse([[1, 0, (-20, -10), (7, 10), [0, 3, 0, 1], 0, 64, 1], []])
-assert s1.approach_speed(Thrust(0, 0), s2, Thrust(0, 1)) == -9
+nd = s1.next_dist(Thrust(0, 0), s2, Thrust(0, 1))
+assert s1.approach_speed(s2, nd) == -9
 
 s1 = Ship.parse([[1, 0, (-20, 10), (7, 0), [0, 3, 0, 1], 0, 64, 1], []])
 s2 = Ship.parse([[1, 0, (-20, -10), (7, 10), [0, 3, 0, 1], 0, 64, 1], []])
-assert s1.approach_speed(Thrust(0, 0), s2, Thrust(0, 1)) == 9
+nd = s1.next_dist(Thrust(0, 0), s2, Thrust(0, 1))
+assert s1.approach_speed(s2, nd) == 9
 
 
 # ==============================================================================================================================
