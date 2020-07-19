@@ -22,6 +22,13 @@ Glyph::Glyph(const LEF& _lef)
       value(0),
       lef(_lef) {}
 
+Glyph::Glyph(const Picture& _pic)
+    : type(GlyphType::PICTURE),
+      ftype(FunctionType::NONE),
+      value(0),
+      lef(0),
+      pic(_pic) {}
+
 bool Glyph::operator==(const Glyph& g) const {
   return (type == g.type) && (ftype == g.ftype) && (value == g.value) &&
          (lef == g.lef);

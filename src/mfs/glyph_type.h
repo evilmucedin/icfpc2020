@@ -10,6 +10,7 @@ enum class GlyphType {
   VARIABLE,
   LINEAR_ENCODED_FORM,
   ALIAS,
+  PICTURE,
   UNKNOWN,
   END
 };

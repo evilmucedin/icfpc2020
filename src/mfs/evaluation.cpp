@@ -1,11 +1,13 @@
 #include "evaluation.h"
 
 #include "dictionary.h"
+#include "expression.h"
 #include "function_type.h"
 #include "glyph_type.h"
 
 #include "common/base.h"
 
+#include <utility>
 #include <vector>
 
 namespace {
@@ -13,6 +15,15 @@ Node* GetI(std::vector<Node*>& current_path, unsigned index) {
   return (index < current_path.size())
              ? current_path[current_path.size() - index - 1]
              : nullptr;
+}
+
+std::pair<int64_t, int64_t> GetPair(Node* node) {
+  assert(node->data.type == GlyphType::UP);
+  assert(node->l->data.type == GlyphType::UP);
+  assert(node->l->l->data.ftype == FunctionType::CONS__PAIR);
+  assert(node->l->r->data.type == GlyphType::NUMBER);
+  assert(node->r->data.type == GlyphType::NUMBER);
+  return {node->l->r->data.value, node->r->data.value};
 }
 
 unsigned ExpectedParameters(FunctionType ftype) {
@@ -31,8 +42,7 @@ unsigned ExpectedParameters(FunctionType ftype) {
     case FunctionType::CDR__TAIL:
     case FunctionType::NIL__EMPTY_LIST:
     case FunctionType::IS_NIL:
-      // case FunctionType::LOG2:
-      // case FunctionType::LENGTH:
+    case FunctionType::DRAW:
       return 1;
     case FunctionType::SUM:
     case FunctionType::PRODUCT:
@@ -41,7 +51,6 @@ unsigned ExpectedParameters(FunctionType ftype) {
     case FunctionType::STRICT_LESS:
     case FunctionType::K_COMBINATOR:
     case FunctionType::FALSE__SECOND:
-      // case FunctionType::CONCAT:
       return 2;
     case FunctionType::S_COMBINATOR:
     case FunctionType::C_COMBINATOR:
@@ -138,6 +147,20 @@ Node* ApplyFunction(Node* node, std::vector<Node*>& current_path) {
         assert(false);
       }
       return p0;
+    case FunctionType::DRAW: {
+      Evaluate(p0->r);
+      assert(Expression::IsList(p0->r));
+      p0->data.pic.Clear();
+      for (Node* c = p0->r; c->data.ftype != FunctionType::NIL__EMPTY_LIST;
+           c = c->r) {
+        assert(c->l->data.type == GlyphType::UP);
+        assert(c->l->l->data.ftype == FunctionType::CONS__PAIR);
+        auto p = GetPair(c->l->r);
+        p0->data.pic.AddPixel(p.first, p.second);
+      }
+      p0->data.type = GlyphType::PICTURE;
+      return p0;
+    }
     case FunctionType::SUM:
       Evaluate(p0->r);
       Evaluate(p1->r);
