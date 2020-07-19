@@ -10,8 +10,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/debug/build/mfs",
             "args": [
-                // "ap ap :0 nil ap ap vec 0 0"
-                "ap ap :33 7 0"
+                "ap ap :0 nil ap ap vec 0 0"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/debug/",

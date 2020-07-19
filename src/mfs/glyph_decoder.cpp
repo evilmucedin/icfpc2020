@@ -231,7 +231,9 @@ Glyph GlyphDecoder::Decode(const std::string& name) {
   if (name[0] == 'x') return {GlyphType::VARIABLE, std::stoll(name.substr(1))};
   if (name[0] == '[') {
     assert(name.back() == ']');
-    return {LEFEncodeNumber(std::stoll(name.substr(1, name.size() - 2)))};
+    return {(name == "[nil]")
+                ? LEFEncodeNIL()
+                : LEFEncodeNumber(std::stoll(name.substr(1, name.size() - 2)))};
   }
   if (name[0] == ':') return {GlyphType::ALIAS, std::stoll(name.substr(1))};
   if (name == ")") return {FunctionType::NIL__EMPTY_LIST};

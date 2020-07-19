@@ -3,7 +3,6 @@
 #include "expression.h"
 #include "glyph.h"
 #include "glyph_compact.h"
-#include "glyph_decoder.h"
 #include "line.h"
 #include "matrix_slice.h"
 #include "message.h"
@@ -13,6 +12,8 @@
 #include "common/linear_algebra/matrix.h"
 
 #include <string>
+
+class GlyphDecoder;
 
 class MessageDecoder {
  protected:

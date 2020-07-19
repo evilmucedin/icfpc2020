@@ -4,6 +4,7 @@
 #include "expression.h"
 #include "function_type.h"
 #include "glyph_type.h"
+#include "node.h"
 
 #include "common/base.h"
 
@@ -87,15 +88,13 @@ Node* ApplyFunction(Node* node, std::vector<Node*>& current_path) {
       return p0;
     case FunctionType::MODULATE:
       Evaluate(p0->r);
-      assert(p0->r->data.type == GlyphType::NUMBER);
       p0->data.type = GlyphType::LINEAR_ENCODED_FORM;
-      p0->data.lef = LEFEncodeNumber(p0->r->data.value);
+      p0->data.lef = LEFEncodeNode(p0->r);
       return p0;
     case FunctionType::DEMODULATE:
       Evaluate(p0->r);
-      assert(p0->r->data.type == GlyphType::LINEAR_ENCODED_FORM);
-      p0->data.type = GlyphType::NUMBER;
-      p0->data.value = LEFDecodeNumber(p0->r->data.lef);
+      p0->l = GetFromDictionary(FunctionType::I_COMBINATOR);
+      p0->r = LEFDecodeExpression(p0->r->data.lef);
       return p0;
     case FunctionType::NEGATE:
       Evaluate(p0->r);
