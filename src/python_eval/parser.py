@@ -8,7 +8,7 @@ sys.setrecursionlimit(1000000)
 
 HALF_WIDTH, HALF_HEIGHT = 196, 196
 COLORS = [(255, 255, 255), (196, 196, 196), (128, 128, 128), (64, 64, 64), (32, 32, 32), (16, 16, 16), (8, 8, 8), (4, 4, 4), (2, 2, 2)]
-SCALE_FACTOR = 3
+SCALE_FACTOR = 6
 
 with open('src/mfs/messages/galaxy.txt', 'rt') as f:
     lines = [line.strip().split(' ') for line in f]
@@ -213,8 +213,14 @@ root = tk.Tk()
 def on_click(event):
     process_click(event.x // SCALE_FACTOR - HALF_WIDTH, event.y // SCALE_FACTOR - HALF_HEIGHT)
 
+
+def on_clickright(event):
+    x, y = map(int, input("Enter x,y: ").split(','))
+    process_click(x, y)
+
 w = tk.Canvas(root, width=SCALE_FACTOR * (2 * HALF_WIDTH + 1), height=SCALE_FACTOR * (2 * HALF_HEIGHT + 1))
 w.bind("<Button-1>", on_click)
+w.bind("<Button-3>", on_clickright)
 w.pack()
 
 # state = nil
@@ -223,9 +229,18 @@ w.pack()
 state = from_python([5, [2, 0, [], [], [], [], [], 44309], 9, []])
 # state = from_python([6, [5, 8, 6725791729228031769, 0, 11, 0, [], [], 4, [0, [], [[[1, 1, (16, 86), (0, 0), [32, 0, 0, 1], 0, 64, 1], []], [[0, 0, (0, 16), (0, 0), [6, 0, 4, 1], 60, 64, 1], []]]], [16, 0, [512, 1, 64], [], []], [], []], 8, []])
 
+state = from_python([5, [2, 0, [], [], [], [], [], 44309], 9, []])
+
+def create_state_to_join(x):
+    return from_python([5, [4, x, [], [], [], [], (36, 0), 44309], 9, []])
+
+if len(sys.argv) > 1:
+    state = create_state_to_join(int(sys.argv[1]))
+
+
 def process_click(x, y):
     global state, img
-    print(f'click at {x}:{y} at state\n{pprint.pformat(to_python(state))}')
+    print(f'click at {x}:{y} at state {to_python(state)}')
     state, img = drawState(state, x, y)
     img = img.resize((SCALE_FACTOR * (2 * HALF_WIDTH + 1), SCALE_FACTOR * (2 * HALF_HEIGHT + 1)), resample=Image.BOX)
     img = ImageTk.PhotoImage(img)
