@@ -2,14 +2,12 @@ import collections
 import random
 from multiprocessing import Process
 from parser import drawState, from_python
+from orbit_util import sign
+from orbiter import orbiter_strategy
 
 from interaction import send2
 
 _, [p1, p2] = send2([1, 0])
-
-
-def sign(x):
-    return 1 if x > 0 else -1 if x < 0 else 0
 
 
 def survivor_strategy(state):
@@ -18,20 +16,20 @@ def survivor_strategy(state):
     my_ships = []
     enemy_ships = []
     for obj in state[3][2]:
-        if obj[0][1] == pid:
+        if obj[0][0] == pid:
             print(obj)
             my_ships.append(obj)
         else:
             enemy_ships.append(obj)
     for my_ship in my_ships:
         my_pos = my_ship[0][2]
-        thrust = (sign(my_pos[0]), 0) if abs(my_pos[0]) > abs(my_pos[1]) else (0, sign(my_pos[1]))
-        actions.append([0, my_ship[0][0], thrust])
+        thrust = (-sign(my_pos[0]), 0) if abs(my_pos[0]) > abs(my_pos[1]) else (0, -sign(my_pos[1]))
+        actions.append([0, my_ship[0][1], thrust])
         if enemy_ships:
             enemy_ship = random.choice(enemy_ships)
             enemy_pos = enemy_ship[0][2]
             enemy_speed = enemy_ship[0][3]
-            actions.append([2, my_ship[0][0], (enemy_pos[0] + enemy_speed[0], enemy_pos[1] + enemy_speed[1]), 5])
+            actions.append([2, my_ship[0][1], (enemy_pos[0] + enemy_speed[0], enemy_pos[1] + enemy_speed[1]), 5])
     return actions
 
 
