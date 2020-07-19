@@ -17,7 +17,7 @@ void PrintI(Node* node, GlyphDecoder& gd);
 void MakeVectorI(Node* node, std::vector<Glyph>& v) {
   assert(node);
   v.push_back(node->data);
-  if (node->data.type == GlyphType::UP) {
+  if (node->data.type == GlyphType::AP) {
     MakeVectorI(node->l, v);
     MakeVectorI(node->r, v);
   }
@@ -29,8 +29,8 @@ void PrintListI(Node* node, bool first, GlyphDecoder& gd) {
     std::cout << (first ? "( " : "") << ") ";
   } else {
     std::cout << (first ? "(" : ", ");
-    assert(node->data.type == GlyphType::UP);
-    assert(node->l->data.type == GlyphType::UP);
+    assert(node->data.type == GlyphType::AP);
+    assert(node->l->data.type == GlyphType::AP);
     assert((node->l->l->data.type == GlyphType::FUNCTION) &&
            (node->l->l->data.ftype == FunctionType::CONS__PAIR));
     PrintI(node->l->r, gd);
@@ -44,7 +44,7 @@ void PrintI(Node* node, GlyphDecoder& gd) {
     PrintListI(node, true, gd);
   } else {
     std::cout << gd.ToString(node->data) << " ";
-    if (node->data.type == GlyphType::UP) {
+    if (node->data.type == GlyphType::AP) {
       PrintI(node->l, gd);
       PrintI(node->r, gd);
     }
@@ -57,7 +57,7 @@ Expression::Expression() {}
 Node* Expression::MakeNodeI(unsigned& index) {
   assert(index < v.size());
   Node* node = NewNode(v[index++]);
-  if (node->data.type == GlyphType::UP) {
+  if (node->data.type == GlyphType::AP) {
     node->l = MakeNodeI(index);
     node->r = MakeNodeI(index);
   }
@@ -97,8 +97,8 @@ bool Expression::IsList(Node* node) {
   if ((node->data.type == GlyphType::FUNCTION) &&
       (node->data.ftype == FunctionType::NIL__EMPTY_LIST))
     return true;
-  if (node->data.type != GlyphType::UP) return false;
-  if (node->l->data.type != GlyphType::UP) return false;
+  if (node->data.type != GlyphType::AP) return false;
+  if (node->l->data.type != GlyphType::AP) return false;
   auto l = node->l->l;
   auto r = bst::base::Right(node);
   return ((r->data.type == GlyphType::FUNCTION) &&
