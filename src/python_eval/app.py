@@ -5,8 +5,8 @@ from orbiter import orbiter_strategy
 from interaction import send2
 
 def player(key, strategy, server_url):
-    send2([2, key, []])
-    state = send2([3, key, [256, 5, 13, 1]])
+    send2([2, key, []], server_url=server_url)
+    state = send2([3, key, [256, 5, 13, 1]], server_url=server_url)
     images = []
     while True:
         state = send2([4, key, strategy(state)], server_url=server_url)
