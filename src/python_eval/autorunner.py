@@ -170,21 +170,29 @@ assert move_towards(1, 3, 6) == 1
 assert move_towards(1, 3, 20) == -1
 
 
-def rotating_strategy(state):
-    print('=====ROTATE====')
-    st = State(state)
-    ship = st.player_ships(st.me)[0].state
-    mid = (st.field_size + st.planet_size) / 2
-    x, y = -ship.y, ship.x
-    n = max(abs(x), abs(y))
-    x, y = mid * x / n, mid * y / n
-    dx = move_towards(ship.x, ship.vx, x)
-    dy = move_towards(ship.y, ship.vy, y)
-    print('===============')
-    if (dx or dy) and ship.fuel:
-        return [ship.engine(dx, dy)]
-    else:
-        return []
+class RotatingStrategy(object):
+    def __init__(self):
+        self.field1 = []
+        self.field2 = {}
+
+    def apply(self, state):
+        self.field1.append('blablabla')
+        self.field2['abc'] = 'def'
+
+        print('=====ROTATE====')
+        st = State(state)
+        ship = st.player_ships(st.me)[0].state
+        mid = (st.field_size + st.planet_size) / 2
+        x, y = -ship.y, ship.x
+        n = max(abs(x), abs(y))
+        x, y = mid * x / n, mid * y / n
+        dx = move_towards(ship.x, ship.vx, x)
+        dy = move_towards(ship.y, ship.vy, y)
+        print('===============')
+        if (dx or dy) and ship.fuel:
+            return [ship.engine(dx, dy)]
+        else:
+            return []
 
 
 def player(id, key, strategy):
@@ -202,8 +210,10 @@ def player(id, key, strategy):
     images[0].save(f'player{id}.gif', save_all=True, append_images=images[1:])
 
 
-p1 = Process(target=player, args=p1 + [rotating_strategy])
-p2 = Process(target=player, args=p2 + [rotating_strategy])
+strategy1 = RotatingStrategy()
+strategy2 = RotatingStrategy()
+p1 = Process(target=player, args=p1 + [strategy1.apply])
+p2 = Process(target=player, args=p2 + [strategy2.apply])
 p1.start()
 p2.start()
 p1.join()
