@@ -1,6 +1,6 @@
 from orbit_util import trace_orbit, sign
 import random
-from states import ShipState, State, JoinResult
+from states import State, JoinResult
 
 '''
 def orbiter_strategy(state):
@@ -37,6 +37,14 @@ class OrbiterStrategy(object):
         self.duplicate = duplicate
         self.T = 0
         self.birthday = {}
+
+    def pick_stats(self, res):
+        joinres = JoinResult.parse(res)
+        laser = 5
+        regen = 13
+        lives = 1
+        fuel = joinres.budget - 4 * laser - 12 * regen - 2 * lives
+        return [fuel, laser, regen, lives]
 
     def apply(self, state):
         self.T += 1
