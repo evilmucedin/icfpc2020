@@ -1,7 +1,7 @@
 import requests
 import sys
 
-from orbiter import OribterStrategy
+from orbiter import OrbiterStrategy
 from interaction import send2
 
 def player(key, strategy, sender):
