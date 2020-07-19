@@ -186,7 +186,7 @@ def drawState(state, in_data):
         if flag == 0:
             break
         else:
-            in_data = from_python(send(data))
+            in_data = from_python(send(data, debug=True))
     im = Image.new("RGB", (2 * HALF_WIDTH + 1, 2 * HALF_HEIGHT + 1), 'black')
     pixels = im.load()
     for ci, points in reversed(list(enumerate(data))):
