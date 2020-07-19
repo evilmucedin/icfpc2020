@@ -105,6 +105,9 @@ void GlyphDecoder::InitMap() {
   RegisterFunctionType(FunctionType::VECTOR, "vec",
                        63 * rows[0] + 3 * rows[1] + 5 * rows[2] + 9 * rows[3] +
                            17 * rows[4] + 33 * rows[5]);
+  RegisterFunctionType(FunctionType::DRAW, "draw",
+                       63 * rows[0] + 33 * rows[1] + 33 * rows[2] +
+                           33 * rows[3] + 33 * rows[4] + 63 * rows[5]);
   RegisterFunctionType(
       FunctionType::IF0, "if0",
       31 * rows[0] + 1 * rows[1] + 29 * rows[2] + 7 * rows[3] + 29 * rows[4]);
@@ -112,9 +115,6 @@ void GlyphDecoder::InitMap() {
                        28 * rows[0] + 32 * rows[1] + 78 * rows[2] +
                            85 * rows[3] + 57 * rows[4] + 2 * rows[5] +
                            28 * rows[6]);
-  RegisterFunctionType(FunctionType::LOG2, "log2", 0);
-  RegisterFunctionType(FunctionType::LENGTH, "length", 0);
-  RegisterFunctionType(FunctionType::CONCAT, "concat", 0);
 }
 
 Glyph GlyphDecoder::Decode(const GlyphCompact& gc) const {
@@ -245,6 +245,8 @@ std::string GlyphDecoder::ToString(const Glyph& g) const {
     }
     case GlyphType::VARIABLE:
       return "x" + std::to_string(g.value);
+    case GlyphType::PICTURE:
+      return g.pic.ToString();
     default: {
       auto itg = map_glyph_type_id.find(g.type);
       Assert(itg != map_glyph_type_id.end());
