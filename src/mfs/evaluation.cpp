@@ -17,6 +17,8 @@ Node* GetI(std::vector<Node*>& current_path, unsigned index) {
 
 unsigned ExpectedParameters(FunctionType ftype) {
   switch (ftype) {
+    case FunctionType::GALAXY:
+      return 0;
     case FunctionType::SUCCESSOR:
     case FunctionType::PREDECESSOR:
     case FunctionType::MODULATE:
@@ -59,6 +61,10 @@ Node* ApplyFunction(Node* node, std::vector<Node*>& current_path) {
   Node *p0 = GetI(current_path, 0), *p1 = GetI(current_path, 1),
        *p2 = GetI(current_path, 2);
   switch (node->data.ftype) {
+    case FunctionType::GALAXY:
+      node->data.type = GlyphType::ALIAS;
+      node->data.value = 0;
+      return p0;
     case FunctionType::SUCCESSOR:
       Evaluate(p0->r);
       assert(p0->r->data.type == GlyphType::NUMBER);
