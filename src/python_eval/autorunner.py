@@ -3,6 +3,7 @@ from multiprocessing import Process
 from parser import drawState, from_python
 from states import State, JoinResult
 from orbiter import OrbiterStrategy
+from old_strategies import OrbiterStrategyOld
 
 from interaction import send2
 from orbit_util import sign, trace_orbit
@@ -131,7 +132,7 @@ def player(id, key, strategy):
 
 
 strategy1 = OrbiterStrategy(do_laser=True, printships=True, duplicate=False)
-strategy2 = OrbiterStrategy(do_laser=False, printships=True, duplicate=True)
+strategy2 = OrbiterStrategyOld(do_laser=False, printships=True, duplicate=True)
 p1 = Process(target=player, args=p1 + [strategy1])
 p2 = Process(target=player, args=p2 + [strategy2])
 p1.start()
