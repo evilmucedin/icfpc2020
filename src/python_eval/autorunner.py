@@ -1,15 +1,13 @@
-import collections
 import random
 from multiprocessing import Process
 from parser import drawState, from_python
-from orbit_util import sign, trace_orbit
-from orbiter import OrbiterStrategy
 from states import ShipState, State, JoinResult
+from orbiter import OrbiterStrategy
 
 from interaction import send2
+from orbit_util import sign, trace_orbit
 
 _, [p1, p2] = send2([1, 0])
-
 
 def survivor_strategy(state):
     pid = state[2][1]
@@ -34,8 +32,6 @@ def survivor_strategy(state):
     return actions
 
 
-
-
 def id_strategy(state):
     print('= ID STRATEGY =')
     State.parse(state)
@@ -47,17 +43,17 @@ def id_strategy(state):
 def die_strategy(state):
     print('=====HANG======')
     st = State.parse(state)
-    ship = st.player_ships(st.me)[0].state
+    ship = st.player_ships(st.me)[0]
     print('===============')
-    return [ship.explode()]
+    return [ship.do_explode()]
 
 
 def move_towards(x, vx, tx):
     """
     x - where we are; vx - our speed; tx - where we want to be.
-    Returns optimal engine power.
+    Returns optimal do_thrust power.
     Speeds up only if we can later stop without overshoooting.
-    Slows down if not slowing down would result in overshooting.
+    Slows down if not slowing down would result in overdo_lasering.
     """
     if x == tx:
         return sign(vx)
@@ -96,7 +92,7 @@ class RotatingStrategy(object):
         print('=====ROTATE====')
         st = State.parse(state)
         print(st)
-        ship = st.player_ships(st.me)[0].state
+        ship = st.player_ships(st.me)[0]
         mid = (st.field_size + st.planet_size) / 2
         x, y = -ship.y, ship.x
         n = max(abs(x), abs(y))
@@ -105,7 +101,7 @@ class RotatingStrategy(object):
         dy = move_towards(ship.y, ship.vy, y)
         print('===============')
         if (dx or dy) and ship.fuel:
-            return [ship.engine(dx, dy)]
+            return [ship.do_thrust(dx, dy)]
         else:
             return []
 
@@ -134,8 +130,8 @@ def player(id, key, strategy):
     images[0].save(f'player{id}.gif', save_all=True, append_images=images[1:])
 
 
-strategy1 = OrbiterStrategy(shoot=True, printships=True, duplicate=False)
-strategy2 = OrbiterStrategy(shoot=False, printships=True, duplicate=True)
+strategy1 = OrbiterStrategy(do_laser=True, printships=True, duplicate=False)
+strategy2 = OrbiterStrategy(do_laser=False, printships=True, duplicate=True)
 p1 = Process(target=player, args=p1 + [strategy1])
 p2 = Process(target=player, args=p2 + [strategy2])
 p1.start()

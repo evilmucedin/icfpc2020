@@ -31,20 +31,12 @@ def orbiter_strategy(state):
 '''
 
 class OrbiterStrategy(object):
-    def __init__(self, shoot, printships, duplicate):
-        self.shoot = shoot
+    def __init__(self, do_laser, printships, duplicate):
+        self.do_laser = do_laser
         self.printships = printships
         self.duplicate = duplicate
         self.T = 0
         self.birthday = {}
-
-    def pick_stats(self, joinres):
-        joinres = JoinResult.parse(joinres)
-        las = 5
-        regen = 13
-        lives = 1
-        fuel = joinres.budget - 4 * las - 12 * regen - 2 * lives
-        return [fuel, las, regen, lives]
 
     def apply(self, state):
         self.T += 1
@@ -53,44 +45,45 @@ class OrbiterStrategy(object):
         my_ships = []
         enemy_ships = []
         for some_ship in st.ships:
-            if some_ship.state.id not in self.birthday:
-                self.birthday[some_ship.state.id] = self.T
-            if some_ship.state.player == st.me:
+            if some_ship.id not in self.birthday:
+                self.birthday[some_ship.id] = self.T
+            if some_ship.player == st.me:
                 my_ships.append(some_ship)
             else:
                 enemy_ships.append(some_ship)
         if self.printships:
-            print(f'T:{self.T} Player {st.me}: {" ".join(str([s.state.fuel, s.state.laser, s.state.regen, s.state.lives]) for s in my_ships)}')
+            print(f'T:{self.T} Player {st.me}: {" ".join(str([s.fuel, s.laser, s.regen, s.lives]) for s in my_ships)}')
         for my_ship in my_ships:
-            birthday = self.birthday[my_ship.state.id]
+            my_ship = my_ship
+            birthday = self.birthday[my_ship.id]
             age = self.T - birthday
-            if self.duplicate and my_ship.state.lives > 1 and self.T > 10:
-                actions.append([3, my_ship.state.id, [my_ship.state.fuel // 2, my_ship.state.laser // 2, my_ship.state.regen // 2, my_ship.state.lives // 2]])
-            my_pos = [my_ship.state.x, my_ship.state.y]
-            my_vel = [my_ship.state.vx, my_ship.state.vy]
+            if self.duplicate and my_ship.lives > 1 and self.T > 10:
+                actions.append(my_ship.do_duplicate())
+            my_pos = [my_ship.x, my_ship.y]
+            my_vel = [my_ship.vx, my_ship.vy]
             cur_closest = trace_orbit(my_pos[0], my_pos[1], my_vel[0], my_vel[1])
             thrust = (0, 0)
             if cur_closest <= 17:
-                thrust = (-sign(my_pos[0]), -sign(my_pos[0])) if abs(my_pos[0]) > abs(my_pos[1]) else (sign(my_pos[1]), -sign(my_pos[1]))
+                thrust = (-sign(my_pos[0]), -sign(my_pos[0])) if abs(my_pos[0]) > abs(my_pos[1]) else (
+                sign(my_pos[1]), -sign(my_pos[1]))
 
             # find closest friend - if too close randomize movement (include velocity in distance computation)
             closest_ship, dist = None, 1000
             for other in my_ships:
-                if other.state.id == my_ship.state.id: continue
-                od = abs(other.state.x - my_ship.state.x) + abs(other.state.y - my_ship.state.y) + abs(other.state.vx - my_ship.state.vx) + abs(other.state.vy - my_ship.state.vy)
+                if other.id == my_ship.id:
+                    continue
+                od = abs(other.x - my_ship.x) + abs(other.y - my_ship.y) + abs(other.vx - my_ship.vx) + abs(
+                    other.vy - my_ship.vy)
                 if od < dist:
                     dist = od
                     closest_ship = other
             if closest_ship and dist < 4:
                 thrust = (random.randint(-1, 1), random.randint(-1, 1))
 
-            actions.append([0, my_ship.state.id, thrust])
+            actions.append([0, my_ship.id, thrust])
             if enemy_ships:
                 enemy_ship = random.choice(enemy_ships)
-                enemy_pos = [enemy_ship.state.x, enemy_ship.state.y]
-                enemy_speed = [enemy_ship.state.vx, enemy_ship.state.vy]
-                if self.shoot:
-                    for my_ship in my_ships:
-                        actions.append([2, my_ship.state.id, (enemy_pos[0] + enemy_speed[0], enemy_pos[1] + enemy_speed[1]), my_ship.state.laser])
-
+                if my_ship.laser and self.do_laser:
+                    ex, ey = enemy_ship.next_round_expected_location()
+                    actions.append(my_ship.do_laser(ex, ey))
         return actions
