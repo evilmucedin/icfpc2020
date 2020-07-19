@@ -18,7 +18,7 @@ def player(id, key, strategy):
         if state[1] == 2:
             print('done')
             break
-    images[0].save(f'player{id}.webp', save_all=True, append_images=images[1:])
+    images[0].save(f'player{id}.gif', save_all=True, append_images=images[1:])
         
 
 p1 = Process(target=player, args=p1 + [id_strategy])
