@@ -110,7 +110,7 @@ class State(StateBase):
         print(d)
         return StateBase.__new__(cls,
                                  game[0],  # step
-                                 d[2][1],     # me
+                                 d[2][1],  # me
                                  game[1][0],  # planet_size
                                  game[1][1],  # field_size
                                  [Ship(x) for x in game[2]])  # ships
@@ -138,25 +138,50 @@ def die_strategy(state):
     return [ship.explode()]
 
 
-def hang_middle_strategy(state):
-    print('=====HANG======')
+def move_towards(x, vx, tx):
+    """
+    x - where we are; vx - our speed; tx - where we want to be.
+    Returns optimal engine power.
+    Speeds up only if we can later stop without overshoooting.
+    Slows down if not slowing down would result in overshooting.
+    """
+    if x == tx:
+        return sign(vx)
+    s = sign(tx - x)
+    if s == -1:
+        x, vx, tx = -x, -vx, -tx
+
+    def can_stop(x, vx):
+        return x + vx * (vx - 1) // 2 <= tx
+
+    if can_stop(x + vx + 1, vx + 1):
+        return -s
+    elif can_stop(x + vx, vx):
+        return 0
+    else:
+        return s
+
+
+assert move_towards(1, 0, 2) == -1
+assert move_towards(1, 1, 2) == 0
+assert move_towards(1, 3, 2) == 1
+assert move_towards(1, 3, 7) == 0
+assert move_towards(1, 3, 6) == 1
+assert move_towards(1, 3, 20) == -1
+
+
+def rotating_strategy(state):
+    print('=====ROTATE====')
     st = State(state)
     ship = st.player_ships(st.me)[0].state
-    mid = (st.field_size + st.planet_size)
-    dx, dy = 0, 0
-    if abs(ship.x) + abs(ship.y) < mid:
-        if sign(ship.x) != sign(ship.vx):
-            dx = -sign(ship.x)
-        if sign(ship.y) != sign(ship.vy):
-            dy = -sign(ship.y)
-    if abs(ship.x) + abs(ship.y) < 2 * mid:
-        if abs(ship.x) >= abs(ship.y) and dy != sign(ship.x) and abs(ship.vy) < 7:
-            dy = sign(ship.x)
-        if abs(ship.y) > abs(ship.x) and dx != -sign(ship.y) and abs(ship.vx) < 7:
-            dx = -sign(ship.y)
-
+    mid = (st.field_size + st.planet_size) / 2
+    x, y = -ship.y, ship.x
+    n = max(abs(x), abs(y))
+    x, y = mid * x / n, mid * y / n
+    dx = move_towards(ship.x, ship.vx, x)
+    dy = move_towards(ship.y, ship.vy, y)
     print('===============')
-    if dx or dy:
+    if (dx or dy) and ship.fuel:
         return [ship.engine(dx, dy)]
     else:
         return []
@@ -177,8 +202,8 @@ def player(id, key, strategy):
     images[0].save(f'player{id}.gif', save_all=True, append_images=images[1:])
 
 
-p1 = Process(target=player, args=p1 + [hang_middle_strategy])
-p2 = Process(target=player, args=p2 + [hang_middle_strategy])
+p1 = Process(target=player, args=p1 + [rotating_strategy])
+p2 = Process(target=player, args=p2 + [rotating_strategy])
 p1.start()
 p2.start()
 p1.join()
