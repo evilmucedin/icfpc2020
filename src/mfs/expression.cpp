@@ -4,6 +4,7 @@
 #include "glyph.h"
 #include "glyph_decoder.h"
 #include "glyph_type.h"
+#include "node.h"
 
 #include "common/base.h"
 #include "common/binary_search_tree/base/right.h"
@@ -23,6 +24,8 @@ void MakeVectorI(Node* node, std::vector<Glyph>& v) {
 };  // namespace
 
 Expression::Expression() {}
+
+Expression::Expression(const Glyph& g) : v(1, g) {}
 
 Node* Expression::MakeNodeI(unsigned& index) {
   assert(index < v.size());

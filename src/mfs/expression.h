@@ -1,9 +1,10 @@
 #pragma once
 
 #include "glyph.h"
-#include "node.h"
 
 #include <vector>
+
+class Node;
 
 class Expression {
  public:

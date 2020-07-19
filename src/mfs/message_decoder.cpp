@@ -30,10 +30,10 @@ GlyphCompact MessageDecoder::DecodeGlyphCompact(const TMatrixSlice& ms) {
 
 Glyph MessageDecoder::DecodeLEFGlyph(const TMatrixSlice& ms) {
   assert(ms.Rows() == 2);
-  la::VectorBool v(ms.Columns());
+  LEF v(ms.Columns());
   for (unsigned c = 0; c < ms.Columns(); ++c) {
     assert(ms.Get(0, c) != ms.Get(1, c));
-    v.Set(c, ms.Get(0, c));
+    v[c] = ms.Get(0, c);
   }
   return {v};
 }
@@ -92,6 +92,12 @@ Message MessageDecoder::Decode(const MessageAsImage& mi) {
 Glyph MessageDecoder::DecodeGlyph(const std::string& s) { return gd.Decode(s); }
 
 Expression MessageDecoder::DecodeExpression(const std::string& s) {
+  if (s[0] == '[') {
+    assert(s.back() == ']');
+    auto e = DecodeExpression(s.substr(1, s.size() - 2));
+    LEF lef = LEFEncodeNode(e.MakeRoot());
+    return Expression(Glyph(lef));
+  }
   Expression e;
   auto vs = Split(s, ' ');
   for (size_t i = 0; i < vs.size(); ++i) {
