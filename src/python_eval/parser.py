@@ -203,8 +203,10 @@ def drawState(state, click_x, click_y):
     pixels = im.load()
     for ci, points in reversed(list(enumerate(data))):
         for x, y in points:
-            # assert -HALF_WIDTH <= x <= HALF_WIDTH
-            # assert -HALF_HEIGHT <= y <= HALF_HEIGHT
+            if not -HALF_WIDTH <= x <= HALF_WIDTH:
+                continue
+            if not -HALF_HEIGHT <= y <= HALF_HEIGHT:
+                continue
             pixels[x + HALF_WIDTH, y + HALF_HEIGHT] = COLORS[ci]
     return state, im
 
