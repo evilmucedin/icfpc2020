@@ -4,6 +4,7 @@
 
 #include "common/base.h"
 
+#include <iostream>
 #include <string>
 
 void TestAll(const std::string& filename) {
@@ -11,6 +12,8 @@ void TestAll(const std::string& filename) {
   MessageDecoder md;
   Message m = md.Decode(mt);
   for (auto& l : m.v) {
+    // l.Print();
+    // std::cout << std::endl;
     assert(l.v.size() == 3);
     assert(l.v[1].v.size() == 1);
     assert(l.v[1].v[0].type == GlyphType::EQUALITY);
