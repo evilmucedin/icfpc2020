@@ -40,7 +40,6 @@ void ProcessGalaxy(const std::string& filename) {
   MessageAsText mt(filename);
   MessageDecoder md;
   Message m = md.Decode(mt);
-  cout << m.v.size() << endl;
   m.Process();
 }
 
