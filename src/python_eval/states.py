@@ -146,6 +146,6 @@ class ThrustPredictor(object):
             if v > bestv:
                 bestk = k
                 bestv = v
-        print(bestk)
-        print(self.hist)
+        # print(bestk)
+        # print(self.hist)
         return bestk
