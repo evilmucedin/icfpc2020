@@ -35,43 +35,51 @@ def survivor_strategy(state):
 
 # ==============================================================================================================================
 
-class ShipState(collections.namedtuple('ShipState', 'player id x y vx vy fuel laser regen lives heat max_heat hzchto')):
+class Ship(collections.namedtuple('Ship', 'player id x y vx vy fuel laser regen lives heat max_heat hzchto last_actions')):
 
     @staticmethod
     def parse(d):
-        return ShipState(
-            d[0],  # player
-            d[1],  # id
-            d[2][0],  # x
-            d[2][1],  # y
-            d[3][0],  # vx
-            d[3][1],  # vy
-            d[4][0],  # fuel
-            d[4][1],  # laser
-            d[4][2],  # regen
-            d[4][3],  # lives
-            d[5],  # heat
-            d[6],  # max_heat
-            d[7])  # hzchto todo
+        d1, d2 = d
+        return Ship(
+            d1[0],  # player
+            d1[1],  # id
+            d1[2][0],  # x
+            d1[2][1],  # y
+            d1[3][0],  # vx
+            d1[3][1],  # vy
+            d1[4][0],  # fuel
+            d1[4][1],  # laser
+            d1[4][2],  # regen
+            d1[4][3],  # lives
+            d1[5],  # heat
+            d1[6],  # max_heat
+            d1[7],  # hzchto todo
+            [ShipAction.parse(x) for x in d2])
 
     def total_hp(self):
         return self.fuel + self.laser + self.regen + self.lives
 
-    def explode(self):
+    def do_explode(self):
         return [1, self.id]
 
-    def engine(self, dx, dy):
+    def do_thrust(self, dx, dy):
         assert abs(dx) <= self.lives
         assert abs(dy) <= self.lives
         return [0, self.id, (dx, dy)]
+
+    def do_laser(self, x, y, power=None):
+        return [2, self.id, (x, y), self.laser if power is None else power]
+
+    def do_duplicate(self):
+        return [3, self.id, [self.fuel // 2, self.laser // 2, self.regen // 2, self.lives // 2]]
 
     def next_round_expected_speed(self):
         vx = self.vx
         vy = self.vy
         if abs(self.x) >= abs(self.y):
-            vx += 1 if x < 0 else -1
+            vx += -sign(self.x)
         if abs(self.y) >= abs(self.x):
-            vy += 1 if y < 0 else - 1
+            vy += -sign(self.y)
         return vx, vy
     
     def next_round_expected_location(self):
@@ -79,10 +87,10 @@ class ShipState(collections.namedtuple('ShipState', 'player id x y vx vy fuel la
         return self.x + vx, self.y + vy
 
 
-ship_state = ShipState.parse([1, 0, (-20, -10), (7, 0), [0, 3, 0, 1], 0, 64, 1])
-assert ship_state.x == -20
-assert ship_state.vx == 7
-assert ship_state.laser == 3
+ship = Ship.parse([[1, 0, (-20, -10), (7, 0), [0, 3, 0, 1], 0, 64, 1], []])
+assert ship.x == -20
+assert ship.vx == 7
+assert ship.laser == 3
 
 
 # ==============================================================================================================================
@@ -92,17 +100,6 @@ class ShipAction(collections.namedtuple('ShipAction', [])):
     @staticmethod
     def parse(d):
         return ShipAction()
-
-
-# ==============================================================================================================================
-
-class Ship(collections.namedtuple('Ship', 'state last_actions')):
-
-    @staticmethod
-    def parse(d):
-        return Ship(ShipState.parse(d[0]),  # state
-                    [ShipAction.parse(x) for x in d[1]])  # last_actions
-
 
 # ==============================================================================================================================
 
@@ -119,7 +116,7 @@ class State(collections.namedtuple('State', 'step me planet_size field_size ship
                      [Ship.parse(x) for x in game[2]])  # ships
 
     def player_ships(self, player):
-        return [x for x in self.ships if x.state.player == player]
+        return [x for x in self.ships if x.player == player]
 
 
 # ==============================================================================================================================
@@ -136,17 +133,17 @@ def id_strategy(state):
 def die_strategy(state):
     print('=====HANG======')
     st = State.parse(state)
-    ship = st.player_ships(st.me)[0].state
+    ship = st.player_ships(st.me)[0]
     print('===============')
-    return [ship.explode()]
+    return [ship.do_explode()]
 
 
 def move_towards(x, vx, tx):
     """
     x - where we are; vx - our speed; tx - where we want to be.
-    Returns optimal engine power.
+    Returns optimal do_thrust power.
     Speeds up only if we can later stop without overshoooting.
-    Slows down if not slowing down would result in overshooting.
+    Slows down if not slowing down would result in overdo_lasering.
     """
     if x == tx:
         return sign(vx)
@@ -185,7 +182,7 @@ class RotatingStrategy(object):
         print('=====ROTATE====')
         st = State.parse(state)
         print(st)
-        ship = st.player_ships(st.me)[0].state
+        ship = st.player_ships(st.me)[0]
         mid = (st.field_size + st.planet_size) / 2
         x, y = -ship.y, ship.x
         n = max(abs(x), abs(y))
@@ -194,13 +191,13 @@ class RotatingStrategy(object):
         dy = move_towards(ship.y, ship.vy, y)
         print('===============')
         if (dx or dy) and ship.fuel:
-            return [ship.engine(dx, dy)]
+            return [ship.do_thrust(dx, dy)]
         else:
             return []
 
 class OrbiterStrategy(object):
-    def __init__(self, shoot, printships, duplicate):
-        self.shoot = shoot
+    def __init__(self, do_laser, printships, duplicate):
+        self.do_laser = do_laser
         self.printships = printships
         self.duplicate = duplicate
         self.T = 0
@@ -213,21 +210,22 @@ class OrbiterStrategy(object):
         my_ships = []
         enemy_ships = []
         for some_ship in st.ships:
-            if some_ship.state.id not in self.birthday:
-                self.birthday[some_ship.state.id] = self.T
-            if some_ship.state.player == st.me:
+            if some_ship.id not in self.birthday:
+                self.birthday[some_ship.id] = self.T
+            if some_ship.player == st.me:
                 my_ships.append(some_ship)
             else:
                 enemy_ships.append(some_ship)
         if self.printships:
-            print(f'T:{self.T} Player {st.me}: {" ".join(str([s.state.fuel, s.state.laser, s.state.regen, s.state.lives]) for s in my_ships)}')
+            print(f'T:{self.T} Player {st.me}: {" ".join(str([s.fuel, s.laser, s.regen, s.lives]) for s in my_ships)}')
         for my_ship in my_ships:
-            birthday = self.birthday[my_ship.state.id]
+            my_ship = my_ship
+            birthday = self.birthday[my_ship.id]
             age = self.T - birthday
-            if self.duplicate and my_ship.state.lives > 1 and self.T > 10:
-                actions.append([3, my_ship.state.id, [my_ship.state.fuel // 2, my_ship.state.laser // 2, my_ship.state.regen // 2, my_ship.state.lives // 2]])
-            my_pos = [my_ship.state.x, my_ship.state.y]
-            my_vel = [my_ship.state.vx, my_ship.state.vy]
+            if self.duplicate and my_ship.lives > 1 and self.T > 10:
+                actions.append(my_ship.do_duplicate())
+            my_pos = [my_ship.x, my_ship.y]
+            my_vel = [my_ship.vx, my_ship.vy]
             cur_closest = trace_orbit(my_pos[0], my_pos[1], my_vel[0], my_vel[1])
             thrust = (0, 0)
             if cur_closest <= 17:
@@ -236,23 +234,21 @@ class OrbiterStrategy(object):
             # find closest friend - if too close randomize movement (include velocity in distance computation)
             closest_ship, dist = None, 1000
             for other in my_ships:
-                if other.state.id == my_ship.state.id: continue
-                od = abs(other.state.x - my_ship.state.x) + abs(other.state.y - my_ship.state.y) + abs(other.state.vx - my_ship.state.vx) + abs(other.state.vy - my_ship.state.vy)
+                if other.id == my_ship.id:
+                    continue
+                od = abs(other.x - my_ship.x) + abs(other.y - my_ship.y) + abs(other.vx - my_ship.vx) + abs(other.vy - my_ship.vy)
                 if od < dist:
                     dist = od
                     closest_ship = other
             if closest_ship and dist < 4:
                 thrust = (random.randint(-1, 1), random.randint(-1, 1))
 
-            actions.append([0, my_ship.state.id, thrust])
+            actions.append([0, my_ship.id, thrust])
             if enemy_ships:
                 enemy_ship = random.choice(enemy_ships)
-                enemy_pos = [enemy_ship.state.x, enemy_ship.state.y]
-                enemy_speed = [enemy_ship.state.vx, enemy_ship.state.vy]
-                if self.shoot:
-                    for my_ship in my_ships:
-                        actions.append([2, my_ship.state.id, (enemy_pos[0] + enemy_speed[0], enemy_pos[1] + enemy_speed[1]), my_ship.state.laser])
-
+                if my_ship.laser and self.do_laser:
+                    ex, ey = enemy_ship.next_round_expected_location()
+                    actions.append(my_ship.do_laser(ex, ey))
         return actions
 
 
@@ -282,8 +278,8 @@ def player(id, key, strategy):
     images[0].save(f'player{id}.gif', save_all=True, append_images=images[1:])
 
 
-strategy1 = OrbiterStrategy(shoot=True, printships=True, duplicate=False)
-strategy2 = OrbiterStrategy(shoot=False, printships=True, duplicate=True)
+strategy1 = OrbiterStrategy(do_laser=True, printships=True, duplicate=False)
+strategy2 = OrbiterStrategy(do_laser=False, printships=True, duplicate=True)
 p1 = Process(target=player, args=p1 + [strategy1.apply])
 p2 = Process(target=player, args=p2 + [strategy2.apply])
 p1.start()
