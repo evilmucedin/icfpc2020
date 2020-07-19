@@ -39,6 +39,8 @@ class OrbiterStrategy(object):
         x, y = my_ship.next_round_expected_location()
         dist = abs(x - ex) + abs(y - ey)
         pw = min(can_take_heat, my_ship.laser)
+        if dist > 150:
+            return 0
         if pw * 3 - dist > 40 or pw == my_ship.laser:
             return pw
         return 0
@@ -105,6 +107,6 @@ class OrbiterStrategy(object):
                     power = self.asses_laser_power(my_ship, will_move, ex, ey)
                     if power > 0 and approach_speed < 1:
                         actions.append(my_ship.do_laser(ex, ey, power))
-                if next_dist < 5 and st.me == ATACKER and self.T > 7:
+                if next_dist < 5 and st.me == ATACKER and self.T > 7 and len(my_ships) >= len(enemy_ships):
                     actions.append(my_ship.do_explode())
         return actions
