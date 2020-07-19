@@ -37,26 +37,24 @@ def survivor_strategy(state):
 
 # ==============================================================================================================================
 
-ShipStateBase = collections.namedtuple('ShipState', 'player id x y vx vy fuel laser regen lives heat max_heat hzchto')
+class ShipState(collections.namedtuple('ShipState', 'player id x y vx vy fuel laser regen lives heat max_heat hzchto')):
 
-
-class ShipState(ShipStateBase):
-
-    def __new__(cls, d):
-        return ShipStateBase.__new__(cls,
-                                     d[0],  # player
-                                     d[1],  # id
-                                     d[2][0],  # x
-                                     d[2][1],  # y
-                                     d[3][0],  # vx
-                                     d[3][1],  # vy
-                                     d[4][0],  # fuel
-                                     d[4][1],  # laser
-                                     d[4][2],  # regen
-                                     d[4][3],  # lives
-                                     d[5],  # heat
-                                     d[6],  # max_heat
-                                     d[7])  # hzchto todo
+    @staticmethod
+    def parse(d):
+        return ShipState(
+            d[0],  # player
+            d[1],  # id
+            d[2][0],  # x
+            d[2][1],  # y
+            d[3][0],  # vx
+            d[3][1],  # vy
+            d[4][0],  # fuel
+            d[4][1],  # laser
+            d[4][2],  # regen
+            d[4][3],  # lives
+            d[5],  # heat
+            d[6],  # max_heat
+            d[7])  # hzchto todo
 
     def total_hp(self):
         return self.fuel + self.laser + self.regen + self.lives
@@ -70,50 +68,44 @@ class ShipState(ShipStateBase):
         return [0, self.id, (dx, dy)]
 
 
-ship_state = ShipState([1, 0, (-20, -10), (7, 0), [0, 3, 0, 1], 0, 64, 1])
+ship_state = ShipState.parse([1, 0, (-20, -10), (7, 0), [0, 3, 0, 1], 0, 64, 1])
 assert ship_state.x == -20
 assert ship_state.vx == 7
 assert ship_state.laser == 3
 
-# ==============================================================================================================================
-
-ShipActionBase = collections.namedtuple('ShipAction', [])
-
-
-class ShipAction(ShipActionBase):
-    def __new__(cls, d):
-        return ShipActionBase.__new__(cls)
-
-
-# ==============================================================================================================================
-
-ShipBase = collections.namedtuple('Ship', 'state last_actions')
-
-
-class Ship(ShipBase):
-    def __new__(cls, d):
-        return ShipBase.__new__(cls,
-                                ShipState(d[0]),  # state
-                                [ShipAction(x) for x in d[1]])  # last_actions
-
 
 # ==============================================================================================================================
 
 
-StateBase = collections.namedtuple('State', 'step me planet_size field_size ships')
+class ShipAction(collections.namedtuple('ShipAction', [])):
+    @staticmethod
+    def parse(d):
+        return ShipAction()
 
 
-class State(StateBase):
+# ==============================================================================================================================
 
-    def __new__(cls, d):
+class Ship(collections.namedtuple('Ship', 'state last_actions')):
+
+    @staticmethod
+    def parse(d):
+        return Ship(ShipState.parse(d[0]),  # state
+                    [ShipAction.parse(x) for x in d[1]])  # last_actions
+
+
+# ==============================================================================================================================
+
+
+class State(collections.namedtuple('State', 'step me planet_size field_size ships')):
+
+    @staticmethod
+    def parse(d):
         game = d[3]
-        print(d)
-        return StateBase.__new__(cls,
-                                 game[0],  # step
-                                 d[2][1],  # me
-                                 game[1][0],  # planet_size
-                                 game[1][1],  # field_size
-                                 [Ship(x) for x in game[2]])  # ships
+        return State(game[0],  # step
+                     d[2][1],  # me
+                     game[1][0],  # planet_size
+                     game[1][1],  # field_size
+                     [Ship.parse(x) for x in game[2]])  # ships
 
     def player_ships(self, player):
         return [x for x in self.ships if x.state.player == player]
@@ -132,7 +124,7 @@ def id_strategy(state):
 
 def die_strategy(state):
     print('=====HANG======')
-    st = State(state)
+    st = State.parse(state)
     ship = st.player_ships(st.me)[0].state
     print('===============')
     return [ship.explode()]
@@ -180,7 +172,8 @@ class RotatingStrategy(object):
         self.field2['abc'] = 'def'
 
         print('=====ROTATE====')
-        st = State(state)
+        st = State.parse(state)
+        print(st)
         ship = st.player_ships(st.me)[0].state
         mid = (st.field_size + st.planet_size) / 2
         x, y = -ship.y, ship.x
