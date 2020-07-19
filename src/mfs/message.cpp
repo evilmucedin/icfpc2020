@@ -27,6 +27,6 @@ void Message::Process() {
   }
 }
 
-void Message::Print() const {
+void Message::Print() {
   for (auto& l : v) l.Print();
 }
