@@ -2,6 +2,7 @@
 
 #include "evaluation.h"
 #include "glyph.h"
+#include "glyph_decoder.h"
 #include "glyph_type.h"
 
 #include "common/base.h"
@@ -56,10 +57,12 @@ void Expression::Evaluate() {
 }
 
 void Expression::Print() const {
+  auto& gd = GlyphDecoder::GetDecoder();
   std::cout << "[";
   for (auto& g : v) {
-    g.Print();
-    std::cout << " ";
+    // g.Print();
+    // std::cout << " ";
+    std::cout << gd.ToString(g) << " ";
   }
   std::cout << "]";
 }
