@@ -1,3 +1,4 @@
+import pprint
 import sys
 from PIL import Image, ImageTk
 from interaction import send
@@ -95,17 +96,6 @@ def _isnil(lst):
     assert isinstance(lst, F) and lst.name in ('nil', 'cons', 'vec'), f'{lst} is not valid argument for isnil'
     return true if lst.name == 'nil' else false
 
-def _bottom():
-    raise AssertionError()
-bottom = F('bottom', 0, _bottom)
-
-def s(x, y, z):
-    try:
-        w = y(z)
-    except:
-        w  = bottom
-    return x(z, w)
-
 toplevel = {
     't': true,
     'f': false,
@@ -121,9 +111,9 @@ toplevel = {
     'mul': F('mul', 2, lambda x, y: eager(x) * eager(y)),
     'eq': F('eq', 2, lambda x, y: true if eager(x) == eager(y) else false),
     'lt': F('lt', 2, lambda x, y: true if eager(x) < eager(y) else false),
-    's': F('s', 3, s),
+    's': F('s', 3, lambda x, y, z: x(z, F('lazy_ap', 0, lambda: y(z)))),
     'c': F('c', 3, lambda x, y, z: x(z, y)),
-    'b': F('b', 3, lambda x, y, z: x(y(z))),
+    'b': F('b', 3, lambda x, y, z: x(F('lazy_ap', 0, lambda: y(z)))),
     'i': F('i', 1, lambda x: x),
     'div': F('div', 2, lambda a, b: quot(eager(a), eager(b))),
     'isnil': F('isnil', 1, lambda lst: _isnil(eager(lst))),
@@ -202,13 +192,9 @@ override_vec = {
 def drawState(state, click_x, click_y):
     in_data = vec(click_x, click_y)
     while True:
-        try:
-            raw_result = symbols['galaxy'](state, in_data)
-            flag, st, data = to_python(raw_result)
-            state = eager(car(cdr(raw_result)), deep=True)
-        except Exception as e:
-            print('CANNOT EVAL: ', state)
-            raise
+        raw_result = symbols['galaxy'](state, in_data)
+        flag, st, data = to_python(raw_result)
+        state = eager(car(cdr(raw_result)), deep=True)
         if flag == 0:
             break
         else:
@@ -239,7 +225,7 @@ state = from_python([5, [2, 0, [], [], [], [], [], 44309], 9, []])
 
 def process_click(x, y):
     global state, img
-    print(f'click at {x}:{y} at state {to_python(state)}')
+    print(f'click at {x}:{y} at state\n{pprint.pformat(to_python(state))}')
     state, img = drawState(state, x, y)
     img = img.resize((SCALE_FACTOR * (2 * HALF_WIDTH + 1), SCALE_FACTOR * (2 * HALF_HEIGHT + 1)), resample=Image.BOX)
     img = ImageTk.PhotoImage(img)
