@@ -103,7 +103,7 @@ class OrbiterStrategy(object):
                 x = thrust[0] if thrust[0] == dx else thrust[0] + dx
                 y = thrust[1] if thrust[1] == dy else thrust[0] + dy
                 thrust = x, y
-            if my_ship.heat == my_ship.max_heat
+            if my_ship.heat + THRUST_HEAT > my_ship.max_heat:
                 thrust = 0, 0
 
             will_move = (thrust != (0, 0))
