@@ -1,6 +1,14 @@
 import collections
 
 # ==============================================================================================================================
+class JoinResult(collections.namedtuple('JoinResult', 'budget')):
+    
+    @staticmethod
+    def parse(d):
+        return JoinResult(
+            d[2][2][0],  # budget
+        )
+# ==============================================================================================================================
 
 class ShipState(collections.namedtuple('ShipState', 'player id x y vx vy fuel laser regen lives heat max_heat hzchto')):
 
