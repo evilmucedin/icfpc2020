@@ -8,6 +8,7 @@
 
 #include "common/base.h"
 
+#include <iostream>
 #include <utility>
 #include <vector>
 
@@ -96,6 +97,14 @@ Node* ApplyFunction(Node* node, std::vector<Node*>& current_path) {
       Evaluate(p0->r);
       p0->l = GetFromDictionary(FunctionType::I_COMBINATOR);
       p0->r = LEFDecodeExpression(p0->r->data.lef);
+      return p0;
+    case FunctionType::SEND:
+      Evaluate(p0->r);
+      std::cout << "[SEND] ";
+      Print(p0->r);
+      std::cout << std::endl;
+      // Realsending is not supported yet.
+      p0->l = GetFromDictionary(FunctionType::I_COMBINATOR);
       return p0;
     case FunctionType::NEGATE:
       Evaluate(p0->r);
