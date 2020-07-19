@@ -1,3 +1,4 @@
+import pprint
 import sys
 from PIL import Image, ImageTk
 from interaction import send
@@ -224,7 +225,7 @@ state = from_python([5, [2, 0, [], [], [], [], [], 44309], 9, []])
 
 def process_click(x, y):
     global state, img
-    print(f'click at {x}:{y} at state {to_python(state)}')
+    print(f'click at {x}:{y} at state\n{pprint.pformat(to_python(state))}')
     state, img = drawState(state, x, y)
     img = img.resize((SCALE_FACTOR * (2 * HALF_WIDTH + 1), SCALE_FACTOR * (2 * HALF_HEIGHT + 1)), resample=Image.BOX)
     img = ImageTk.PhotoImage(img)
