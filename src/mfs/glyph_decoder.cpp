@@ -17,9 +17,11 @@ void GlyphDecoder::RegisterGlyphType(GlyphType type, const std::string& id,
   Assert(map_mask_glyph_type.find(mask) == map_mask_glyph_type.end());
   Assert(map_glyph_type_mask.find(type) == map_glyph_type_mask.end());
   Assert(map_id_glyph_type.find(id) == map_id_glyph_type.end());
+  Assert(map_glyph_type_id.find(type) == map_glyph_type_id.end());
   map_mask_glyph_type[mask] = type;
   map_glyph_type_mask[type] = mask;
   map_id_glyph_type[id] = type;
+  map_glyph_type_id[type] = id;
 }
 
 void GlyphDecoder::RegisterFunctionType(FunctionType type,
@@ -27,11 +29,13 @@ void GlyphDecoder::RegisterFunctionType(FunctionType type,
   Assert(map_mask_function_type.find(mask) == map_mask_function_type.end());
   Assert(map_function_type_mask.find(type) == map_function_type_mask.end());
   Assert(map_id_function_type.find(id) == map_id_function_type.end());
+  Assert(map_function_type_id.find(type) == map_function_type_id.end());
   if (mask) {
     map_mask_function_type[mask] = type;
     map_function_type_mask[type] = mask;
   }
   map_id_function_type[id] = type;
+  map_function_type_id[type] = id;
 }
 
 GlyphDecoder::GlyphDecoder() { InitMap(); }
@@ -227,6 +231,25 @@ Glyph GlyphDecoder::Decode(const std::string& name) {
   }
   if (name[0] == ':') return {GlyphType::ALIAS, std::stoll(name.substr(1))};
   return {GlyphType::NUMBER, std::stoll(name)};
+}
+
+std::string GlyphDecoder::ToString(const Glyph& g) const {
+  switch (g.type) {
+    case GlyphType::NUMBER:
+      return std::to_string(g.value);
+    case GlyphType::FUNCTION: {
+      auto itf = map_function_type_id.find(g.ftype);
+      Assert(itf != map_function_type_id.end());
+      return {itf->second};
+    }
+    case GlyphType::VARIABLE:
+      return "x" + std::to_string(g.value);
+    default: {
+      auto itg = map_glyph_type_id.find(g.type);
+      Assert(itg != map_glyph_type_id.end());
+      return {itg->second};
+    }
+  }
 }
 
 GlyphDecoder& GlyphDecoder::GetDecoder() { return gd; }

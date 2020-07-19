@@ -19,6 +19,8 @@ class GlyphDecoder {
 
   std::unordered_map<std::string, GlyphType> map_id_glyph_type;
   std::unordered_map<std::string, FunctionType> map_id_function_type;
+  std::unordered_map<GlyphType, std::string> map_glyph_type_id;
+  std::unordered_map<FunctionType, std::string> map_function_type_id;
 
   void RegisterGlyphType(GlyphType type, const std::string& id, uint64_t mask);
   void RegisterFunctionType(FunctionType type, const std::string& id,
@@ -41,6 +43,7 @@ class GlyphDecoder {
   uint64_t EncodeVariable(int64_t value) const;
 
   Glyph Decode(const std::string& name);
+  std::string ToString(const Glyph& g) const;
 
   static GlyphDecoder& GetDecoder();
 };
