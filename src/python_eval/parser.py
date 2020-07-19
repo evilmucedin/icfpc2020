@@ -95,17 +95,6 @@ def _isnil(lst):
     assert isinstance(lst, F) and lst.name in ('nil', 'cons', 'vec'), f'{lst} is not valid argument for isnil'
     return true if lst.name == 'nil' else false
 
-def _bottom():
-    raise AssertionError()
-bottom = F('bottom', 0, _bottom)
-
-def s(x, y, z):
-    try:
-        w = y(z)
-    except:
-        w  = bottom
-    return x(z, w)
-
 toplevel = {
     't': true,
     'f': false,
@@ -121,7 +110,7 @@ toplevel = {
     'mul': F('mul', 2, lambda x, y: eager(x) * eager(y)),
     'eq': F('eq', 2, lambda x, y: true if eager(x) == eager(y) else false),
     'lt': F('lt', 2, lambda x, y: true if eager(x) < eager(y) else false),
-    's': F('s', 3, s),
+    's': F('s', 3, lambda x, y, z: x(z, F('lazy_app', 0, lambda: y(z)))),
     'c': F('c', 3, lambda x, y, z: x(z, y)),
     'b': F('b', 3, lambda x, y, z: x(y(z))),
     'i': F('i', 1, lambda x: x),
