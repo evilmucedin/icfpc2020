@@ -23,5 +23,8 @@ class Expression {
   void Evaluate();
   void Print() const;
 
+  // Expression should be evaluated
+  static bool IsList(Node* node);
+
   bool operator==(const Expression& r) const;
 };
