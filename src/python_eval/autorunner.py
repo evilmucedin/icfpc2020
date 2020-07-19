@@ -131,8 +131,8 @@ def player(id, key, strategy):
     images[0].save(f'player{id}.gif', save_all=True, append_images=images[1:])
 
 
-strategy1 = OrbiterStrategy(do_laser=True, printships=True, duplicate=False)
-strategy2 = OrbiterStrategyOld(do_laser=False, printships=True, duplicate=True)
+strategy1 = OrbiterStrategy(do_laser=False, printships=True, duplicate=True)
+strategy2 = OrbiterStrategy(do_laser=True, printships=True, duplicate=True)
 p1 = Process(target=player, args=p1 + [strategy1])
 p2 = Process(target=player, args=p2 + [strategy2])
 p1.start()

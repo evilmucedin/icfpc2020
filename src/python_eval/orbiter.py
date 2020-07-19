@@ -2,6 +2,7 @@ import random
 
 from constants import *
 from orbit_util import trace_orbit, sign
+from states import ATACKER
 from states import State, JoinResult, ThrustPredictor, Thrust
 
 
@@ -22,8 +23,16 @@ class OrbiterStrategy(object):
         fuel = joinres.budget - LASER_COST * laser - REGEN_COST * regen - LIVES_COST * lives
         return [fuel, laser, regen, lives]
 
-    def choose_target(self, my_ship, enemy_ships):
-        return random.choice(enemy_ships)
+    def choose_target(self, my_ship, thrust_action, enemy_ships):
+        dist = 10000
+        ship = None
+        for enemy_ship in enemy_ships:
+            predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
+            next_dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
+            if next_dist < dist:
+                ship = enemy_ship
+                dist = next_dist
+        return ship
 
     def asses_laser_power(self, my_ship, will_move, ex, ey):
         can_take_heat = my_ship.max_heat + my_ship.regen - my_ship.heat - (THRUST_HEAT if will_move else 0)
@@ -54,12 +63,12 @@ class OrbiterStrategy(object):
             else:
                 enemy_ships.append(some_ship)
         if self.printships:
-            print(f'T:{self.T} Player {st.me}: {" ".join(str([s.fuel, s.laser, s.regen, s.lives]) for s in my_ships)}')
+            print(f'T:{self.T} Player {st.me}:' + '\n' + "\n".join(str(s) for s in my_ships))
         for my_ship in my_ships:
             my_ship = my_ship
             birthday = self.birthday[my_ship.id]
             age = self.T - birthday
-            if self.duplicate and my_ship.lives > 1 and self.T > 10:
+            if self.duplicate and my_ship.lives > 1 and self.T > 5:
                 actions.append(my_ship.do_duplicate())
             my_pos = [my_ship.x, my_ship.y]
             my_vel = [my_ship.vx, my_ship.vy]
@@ -86,12 +95,16 @@ class OrbiterStrategy(object):
 
             actions.append([0, my_ship.id, thrust])
             if enemy_ships:
-                enemy_ship = self.choose_target(my_ship, enemy_ships)
+                thrust_action = Thrust(*thrust)
+                enemy_ship = self.choose_target(my_ship, thrust_action, enemy_ships)
+                predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
+                ex, ey = enemy_ship.next_round_expected_location(predicted_thrust)
+                next_dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
+                approach_speed = my_ship.approach_speed(enemy_ship, next_dist)
                 if my_ship.laser and self.do_laser:
-                    predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
-                    ex, ey = enemy_ship.next_round_expected_location(predicted_thrust)
-                    approach_speed = my_ship.approach_speed(Thrust(*thrust), enemy_ship, predicted_thrust)
                     power = self.asses_laser_power(my_ship, will_move, ex, ey)
                     if power > 0 and approach_speed < 1:
                         actions.append(my_ship.do_laser(ex, ey, power))
+                if next_dist < 5 and st.me == ATACKER and self.T > 7:
+                    actions.append(my_ship.do_explode())
         return actions
