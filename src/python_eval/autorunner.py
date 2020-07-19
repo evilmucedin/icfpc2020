@@ -65,6 +65,19 @@ class ShipState(collections.namedtuple('ShipState', 'player id x y vx vy fuel la
         assert abs(dy) <= self.lives
         return [0, self.id, (dx, dy)]
 
+    def next_round_expected_speed(self):
+        dx = self.dx
+        dy = self.dy
+        if abs(x) >= abs(y):
+            dx += 1 if x < 0 else -1
+        if abs(y) >= abs(x):
+            dy += 1 if y < 0 else - 1
+        return dx, dy
+    
+    def next_round_expected_location(self):
+        dx, dy = next_round_expected_speed()
+        return self.x + dx, self.y + dy
+
 
 ship_state = ShipState.parse([1, 0, (-20, -10), (7, 0), [0, 3, 0, 1], 0, 64, 1])
 assert ship_state.x == -20
@@ -269,7 +282,7 @@ def player(id, key, strategy):
     images[0].save(f'player{id}.gif', save_all=True, append_images=images[1:])
 
 
-strategy1 = OrbiterStrategy(shoot=False, printships=True, duplicate=True)
+strategy1 = OrbiterStrategy(shoot=True, printships=True, duplicate=False)
 strategy2 = OrbiterStrategy(shoot=False, printships=True, duplicate=True)
 p1 = Process(target=player, args=p1 + [strategy1.apply])
 p2 = Process(target=player, args=p2 + [strategy2.apply])
