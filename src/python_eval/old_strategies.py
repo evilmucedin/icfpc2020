@@ -1,9 +1,36 @@
 from orbit_util import trace_orbit, sign
 import random
 from states import State, JoinResult
-from constants import *
 
-class OrbiterStrategy(object):
+'''
+def orbiter_strategy(state):
+    pid = state[2][1]
+    actions = []
+    my_ships = []
+    enemy_ships = []
+    for obj in state[3][2]:
+        if obj[0][0] == pid:
+            print(obj)
+            my_ships.append(obj)
+        else:
+            enemy_ships.append(obj)
+    for my_ship in my_ships:
+        my_pos = my_ship[0][2]
+        my_vel = my_ship[0][3]
+        cur_closest = trace_orbit(my_pos[0], my_pos[1], my_vel[0], my_vel[1])
+        thrust = (0, 0)
+        if cur_closest <= 17:
+            thrust = (-sign(my_pos[0]), -sign(my_pos[0])) if abs(my_pos[0]) > abs(my_pos[1]) else (sign(my_pos[1]), -sign(my_pos[1]))
+        actions.append([0, my_ship[0][1], thrust])
+        if enemy_ships:
+            enemy_ship = random.choice(enemy_ships)
+            enemy_pos = enemy_ship[0][2]
+            enemy_speed = enemy_ship[0][3]
+            actions.append([2, my_ship[0][1], (enemy_pos[0] + enemy_speed[0], enemy_pos[1] + enemy_speed[1]), 5])
+    return actions
+'''
+
+class OrbiterStrategyOld(object):
     def __init__(self, do_laser, printships, duplicate):
         self.do_laser = do_laser
         self.printships = printships
@@ -13,23 +40,11 @@ class OrbiterStrategy(object):
 
     def pick_stats(self, res):
         joinres = JoinResult.parse(res)
-        laser = 60
-        regen = 14
+        laser = 5
+        regen = 13
         lives = 1
-        fuel = joinres.budget - LASER_COST * laser - REGEN_COST * regen - LIVES_COST * lives
+        fuel = joinres.budget - 4 * laser - 12 * regen - 2 * lives
         return [fuel, laser, regen, lives]
-
-    def choose_target(self, my_ship, enemy_ships):
-        return random.choice(enemy_ships)
-
-    def asses_laser_power(self, my_ship, will_move, ex, ey):
-        can_take_heat = my_ship.max_heat + my_ship.regen - my_ship.heat - (THRUST_HEAT if will_move else 0)
-        x, y = my_ship.next_round_expected_location()
-        dist = abs(x-ex) + abs(y-ey)
-        pw = min(can_take_heat, my_ship.laser)
-        if pw * 3 - dist > 40 or pw == my_ship.laser:
-            return pw
-        return 0
 
     def apply(self, state):
         self.T += 1
@@ -73,14 +88,11 @@ class OrbiterStrategy(object):
             if closest_ship and dist < 4:
                 thrust = (random.randint(-1, 1), random.randint(-1, 1))
 
-            will_move = (thrust != (0, 0))
-
             actions.append([0, my_ship.id, thrust])
             if enemy_ships:
-                enemy_ship = self.choose_target(my_ship, enemy_ships)
+                enemy_ship = random.choice(enemy_ships)
                 if my_ship.laser and self.do_laser:
                     ex, ey = enemy_ship.next_round_expected_location()
-                    power = self.asses_laser_power(my_ship, will_move, ex, ey)
-                    if power > 0:
-                        actions.append(my_ship.do_laser(ex, ey, power))
+                    actions.append(my_ship.do_laser(ex, ey))
         return actions
+
