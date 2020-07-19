@@ -31,5 +31,6 @@ enum class FunctionType {
   IF0 = 37,
   GALAXY = 42,
   // ...
+  MODEM = 101,
   END
 };

@@ -43,6 +43,7 @@ unsigned ExpectedParameters(FunctionType ftype) {
     case FunctionType::IS_NIL:
     case FunctionType::DRAW:
     case FunctionType::MULTIPLE_DRAW:
+    case FunctionType::MODEM:
       return 1;
     case FunctionType::SUM:
     case FunctionType::PRODUCT:
@@ -172,6 +173,14 @@ Node* ApplyFunction(Node* node, std::vector<Node*>& current_path) {
         p0->l = n2;
         p0->r = n3;
       }
+      return p0;
+    }
+    case FunctionType::MODEM: {
+      auto n1 = NewNode(GlyphType::AP);
+      n1->l = GetFromDictionary(FunctionType::MODULATE);
+      n1->r = p0->r;
+      p0->l = GetFromDictionary(FunctionType::DEMODULATE);
+      p0->r = n1;
       return p0;
     }
     case FunctionType::SUM:
