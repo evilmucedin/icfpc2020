@@ -47,7 +47,7 @@ void GlyphDecoder::InitMap() {
   RegisterGlyphType(GlyphType::DOT, "...", MASK_DOT);
   RegisterGlyphType(GlyphType::EQUALITY, "=",
                     7 * rows[0] + rows[1] + 7 * rows[2]);
-  RegisterGlyphType(GlyphType::UP, "ap", 3 * rows[0] + rows[1]);
+  RegisterGlyphType(GlyphType::AP, "ap", 3 * rows[0] + rows[1]);
   RegisterFunctionType(FunctionType::SUCCESSOR, "inc",
                        15 * rows[0] + 3 * rows[1] + 9 * rows[2] + 13 * rows[3]);
   RegisterFunctionType(FunctionType::PREDECESSOR, "dec",
@@ -105,16 +105,29 @@ void GlyphDecoder::InitMap() {
   RegisterFunctionType(FunctionType::VECTOR, "vec",
                        63 * rows[0] + 3 * rows[1] + 5 * rows[2] + 9 * rows[3] +
                            17 * rows[4] + 33 * rows[5]);
+  RegisterFunctionType(FunctionType::DRAW, "draw",
+                       63 * rows[0] + 33 * rows[1] + 33 * rows[2] +
+                           33 * rows[3] + 33 * rows[4] + 63 * rows[5]);
+  RegisterFunctionType(FunctionType::MULTIPLE_DRAW, "multipledraw",
+                       127 * rows[0] + 73 * rows[1] + 73 * rows[2] +
+                           127 * rows[3] + 73 * rows[4] + 73 * rows[5] +
+                           127 * rows[6]);
   RegisterFunctionType(
       FunctionType::IF0, "if0",
       31 * rows[0] + 1 * rows[1] + 29 * rows[2] + 7 * rows[3] + 29 * rows[4]);
+  RegisterFunctionType(FunctionType::MODEM, "modem",
+                       63 * rows[0] + 1 * rows[1] + 1 * rows[2] + 1 * rows[3] +
+                           51 * rows[4] + 13 * rows[5]);
+  RegisterFunctionType(FunctionType::F38, "f38",
+                       63 * rows[0] + 37 * rows[1] + 61 * rows[2] +
+                           47 * rows[3] + 41 * rows[4] + 63 * rows[5]);
+  RegisterFunctionType(FunctionType::INTERACT, "interact",
+                       63 * rows[0] + 33 * rows[1] + 45 * rows[2] +
+                           45 * rows[3] + 33 * rows[4] + 63 * rows[5]);
   RegisterFunctionType(FunctionType::GALAXY, "galaxy",
                        28 * rows[0] + 32 * rows[1] + 78 * rows[2] +
                            85 * rows[3] + 57 * rows[4] + 2 * rows[5] +
                            28 * rows[6]);
-  RegisterFunctionType(FunctionType::LOG2, "log2", 0);
-  RegisterFunctionType(FunctionType::LENGTH, "length", 0);
-  RegisterFunctionType(FunctionType::CONCAT, "concat", 0);
 }
 
 Glyph GlyphDecoder::Decode(const GlyphCompact& gc) const {
@@ -227,7 +240,9 @@ Glyph GlyphDecoder::Decode(const std::string& name) {
   if (name[0] == 'x') return {GlyphType::VARIABLE, std::stoll(name.substr(1))};
   if (name[0] == '[') {
     assert(name.back() == ']');
-    return {LEFEncodeNumber(std::stoll(name.substr(1, name.size() - 2)))};
+    return {(name == "[nil]")
+                ? LEFEncodeNIL()
+                : LEFEncodeNumber(std::stoll(name.substr(1, name.size() - 2)))};
   }
   if (name[0] == ':') return {GlyphType::ALIAS, std::stoll(name.substr(1))};
   if (name == ")") return {FunctionType::NIL__EMPTY_LIST};
@@ -245,6 +260,8 @@ std::string GlyphDecoder::ToString(const Glyph& g) const {
     }
     case GlyphType::VARIABLE:
       return "x" + std::to_string(g.value);
+    case GlyphType::PICTURE:
+      return g.pic.ToString();
     default: {
       auto itg = map_glyph_type_id.find(g.type);
       Assert(itg != map_glyph_type_id.end());

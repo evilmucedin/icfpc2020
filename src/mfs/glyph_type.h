@@ -5,11 +5,12 @@ enum class GlyphType {
   ONE,
   DOT,
   EQUALITY,
-  UP,
+  AP,
   FUNCTION,
   VARIABLE,
   LINEAR_ENCODED_FORM,
   ALIAS,
+  PICTURE,
   UNKNOWN,
   END
 };

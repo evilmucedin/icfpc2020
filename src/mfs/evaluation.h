@@ -1,6 +1,6 @@
 #pragma once
 
-#include "node.h"
+class Node;
 
 void ExpandAlias(Node* node);
 void EvaluateLazyIsNil(Node* node);

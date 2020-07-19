@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-void Line::Print() const {
+void Line::Print() {
   for (auto& e : v) {
     e.Print();
     std::cout << "  ";
