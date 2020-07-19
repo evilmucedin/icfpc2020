@@ -19,7 +19,7 @@ class OrbiterStrategy(object):
         joinres = JoinResult.parse(res)
         laser = 64
         regen = 10
-        lives = 1
+        lives = 2
         fuel = joinres.budget - LASER_COST * laser - REGEN_COST * regen - LIVES_COST * lives
         return [fuel, laser, regen, lives]
 
