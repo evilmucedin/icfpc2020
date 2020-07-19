@@ -7,12 +7,39 @@ def sign(x):
 
 # ==============================================================================================================================
 class JoinResult(collections.namedtuple('JoinResult', 'budget')):
-    
+
     @staticmethod
     def parse(d):
         return JoinResult(
             d[2][2][0],  # budget
         )
+
+
+# ==============================================================================================================================
+
+class Thrust(collections.namedtuple('Thrust', 'x y')):
+    pass
+
+
+class Laser(collections.namedtuple('Laser', 'x y pwr dmg hzchto')):
+    pass
+
+
+class Explode(collections.namedtuple('Explode', [])):
+    pass
+
+
+class ShipAction(collections.namedtuple('ShipAction', [])):
+    @staticmethod
+    def parse(d):
+        if d[0] == 0:
+            return Thrust(d[1][0], d[1][1])
+        if d[0] == 1:
+            return Explode()
+        if d[1] == 2:
+            return Laser(d[1][1], d[1][1], d[2], d[3], d[4])
+
+
 # ==============================================================================================================================
 
 class Ship(
@@ -54,17 +81,17 @@ class Ship(
     def do_duplicate(self):
         return [3, self.id, [self.fuel // 2, self.laser // 2, self.regen // 2, self.lives // 2]]
 
-    def next_round_expected_speed(self):
-        vx = self.vx
-        vy = self.vy
+    def next_round_expected_speed(self, thrust):
+        vx = self.vx - thrust.x
+        vy = self.vy - thrust.y
         if abs(self.x) >= abs(self.y):
             vx += -sign(self.x)
         if abs(self.y) >= abs(self.x):
             vy += -sign(self.y)
         return vx, vy
 
-    def next_round_expected_location(self):
-        vx, vy = self.next_round_expected_speed()
+    def next_round_expected_location(self, thrust=Thrust(0, 0)):
+        vx, vy = self.next_round_expected_speed(thrust)
         return self.x + vx, self.y + vy
 
 
@@ -72,15 +99,6 @@ ship = Ship.parse([[1, 0, (-20, -10), (7, 0), [0, 3, 0, 1], 0, 64, 1], []])
 assert ship.x == -20
 assert ship.vx == 7
 assert ship.laser == 3
-
-
-# ==============================================================================================================================
-
-
-class ShipAction(collections.namedtuple('ShipAction', [])):
-    @staticmethod
-    def parse(d):
-        return ShipAction()
 
 
 # ==============================================================================================================================
@@ -99,3 +117,35 @@ class State(collections.namedtuple('State', 'step me planet_size field_size ship
 
     def player_ships(self, player):
         return [x for x in self.ships if x.player == player]
+
+
+# ==============================================================================================================================
+
+class ThrustPredictor(object):
+
+    def __init__(self, decay=0.95):
+        self.cnt = collections.Counter()
+        self.hist = []  # could use later
+        self.decay = decay
+
+    def add(self, actions):
+        thrust = Thrust(0, 0)
+        for action in actions:
+            if type(action) == Thrust:
+                thrust = action
+                break
+        self.hist.append(thrust)
+        self.cnt[thrust] += 1
+        for k, v in self.cnt.items():
+            self.cnt[k] *= self.decay
+
+    def predict(self):
+        bestv = 0
+        bestk = Thrust(0, 0)
+        for k, v in self.cnt.items():  # likely up to 5 elements
+            if v > bestv:
+                bestk = k
+                bestv = v
+        print(bestk)
+        print(self.hist)
+        return bestk

@@ -1,7 +1,9 @@
-from orbit_util import trace_orbit, sign
 import random
-from states import State, JoinResult
+
 from constants import *
+from orbit_util import trace_orbit, sign
+from states import State, JoinResult, ThrustPredictor
+
 
 class OrbiterStrategy(object):
     def __init__(self, do_laser, printships, duplicate):
@@ -10,6 +12,7 @@ class OrbiterStrategy(object):
         self.duplicate = duplicate
         self.T = 0
         self.birthday = {}
+        self.thrust_predictors = {}
 
     def pick_stats(self, res):
         joinres = JoinResult.parse(res)
@@ -25,7 +28,7 @@ class OrbiterStrategy(object):
     def asses_laser_power(self, my_ship, will_move, ex, ey):
         can_take_heat = my_ship.max_heat + my_ship.regen - my_ship.heat - (THRUST_HEAT if will_move else 0)
         x, y = my_ship.next_round_expected_location()
-        dist = abs(x-ex) + abs(y-ey)
+        dist = abs(x - ex) + abs(y - ey)
         pw = min(can_take_heat, my_ship.laser)
         if pw * 3 - dist > 40 or pw == my_ship.laser:
             return pw
@@ -35,6 +38,12 @@ class OrbiterStrategy(object):
         self.T += 1
         st = State.parse(state)
         actions = []
+
+        for ship in st.ships:
+            if ship.id not in self.thrust_predictors:
+                self.thrust_predictors[ship.id] = ThrustPredictor()
+            self.thrust_predictors[ship.id].add(ship.last_actions)
+
         my_ships = []
         enemy_ships = []
         for some_ship in st.ships:
@@ -58,7 +67,7 @@ class OrbiterStrategy(object):
             thrust = (0, 0)
             if cur_closest <= 17:
                 thrust = (-sign(my_pos[0]), -sign(my_pos[0])) if abs(my_pos[0]) > abs(my_pos[1]) else (
-                sign(my_pos[1]), -sign(my_pos[1]))
+                    sign(my_pos[1]), -sign(my_pos[1]))
 
             # find closest friend - if too close randomize movement (include velocity in distance computation)
             closest_ship, dist = None, 1000
@@ -79,7 +88,8 @@ class OrbiterStrategy(object):
             if enemy_ships:
                 enemy_ship = self.choose_target(my_ship, enemy_ships)
                 if my_ship.laser and self.do_laser:
-                    ex, ey = enemy_ship.next_round_expected_location()
+                    predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
+                    ex, ey = enemy_ship.next_round_expected_location(predicted_thrust)
                     power = self.asses_laser_power(my_ship, will_move, ex, ey)
                     if power > 0:
                         actions.append(my_ship.do_laser(ex, ey, power))
