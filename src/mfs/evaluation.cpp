@@ -18,8 +18,8 @@ Node* GetI(std::vector<Node*>& current_path, unsigned index) {
 }
 
 std::pair<int64_t, int64_t> GetPair(Node* node) {
-  assert(node->data.type == GlyphType::UP);
-  assert(node->l->data.type == GlyphType::UP);
+  assert(node->data.type == GlyphType::AP);
+  assert(node->l->data.type == GlyphType::AP);
   assert(node->l->l->data.ftype == FunctionType::CONS__PAIR);
   assert(node->l->r->data.type == GlyphType::NUMBER);
   assert(node->r->data.type == GlyphType::NUMBER);
@@ -137,8 +137,8 @@ Node* ApplyFunction(Node* node, std::vector<Node*>& current_path) {
           (p0->r->data.ftype == FunctionType::NIL__EMPTY_LIST)) {
         p0->data.type = GlyphType::FUNCTION;
         p0->data.ftype = FunctionType::K_COMBINATOR;
-      } else if ((p0->r->data.type == GlyphType::UP) &&
-                 (p0->r->l->data.type == GlyphType::UP) &&
+      } else if ((p0->r->data.type == GlyphType::AP) &&
+                 (p0->r->l->data.type == GlyphType::AP) &&
                  (p0->r->l->l->data.type == GlyphType::FUNCTION) &&
                  (p0->r->l->l->data.ftype == FunctionType::CONS__PAIR)) {
         p0->data.type = GlyphType::FUNCTION;
@@ -153,7 +153,7 @@ Node* ApplyFunction(Node* node, std::vector<Node*>& current_path) {
       p0->data.pic.Clear();
       for (Node* c = p0->r; c->data.ftype != FunctionType::NIL__EMPTY_LIST;
            c = c->r) {
-        assert(c->l->data.type == GlyphType::UP);
+        assert(c->l->data.type == GlyphType::AP);
         assert(c->l->l->data.ftype == FunctionType::CONS__PAIR);
         auto p = GetPair(c->l->r);
         p0->data.pic.AddPixel(p.first, p.second);
@@ -262,8 +262,8 @@ Node* ApplyFunction(Node* node, std::vector<Node*>& current_path) {
       p1->l = GetFromDictionary(FunctionType::I_COMBINATOR);
       return p1;
     case FunctionType::S_COMBINATOR: {
-      auto n1 = NewNode(GlyphType::UP);
-      auto n2 = NewNode(GlyphType::UP);
+      auto n1 = NewNode(GlyphType::AP);
+      auto n2 = NewNode(GlyphType::AP);
       n1->l = p0->r;
       n1->r = p2->r;
       n2->l = p1->r;
@@ -273,7 +273,7 @@ Node* ApplyFunction(Node* node, std::vector<Node*>& current_path) {
       return p2;
     }
     case FunctionType::C_COMBINATOR: {
-      auto n1 = NewNode(GlyphType::UP);
+      auto n1 = NewNode(GlyphType::AP);
       n1->l = p0->r;
       n1->r = p2->r;
       p2->l = n1;
@@ -281,7 +281,7 @@ Node* ApplyFunction(Node* node, std::vector<Node*>& current_path) {
       return p2;
     }
     case FunctionType::B_COMBINATOR: {
-      auto n1 = NewNode(GlyphType::UP);
+      auto n1 = NewNode(GlyphType::AP);
       n1->l = p1->r;
       n1->r = p2->r;
       p2->l = p0->r;
@@ -290,7 +290,7 @@ Node* ApplyFunction(Node* node, std::vector<Node*>& current_path) {
     }
     case FunctionType::CONS__PAIR:
     case FunctionType::VECTOR: {
-      auto n1 = NewNode(GlyphType::UP);
+      auto n1 = NewNode(GlyphType::AP);
       n1->l = p2->r;
       n1->r = p0->r;
       p2->l = n1;
@@ -316,7 +316,7 @@ Node* EvaluateI(Node* node, std::vector<Node*>& current_path) {
     if (node->data.type == GlyphType::ALIAS) {
       subtree_changed = true;
       ExpandAlias(node);
-    } else if (node->data.type == GlyphType::UP) {
+    } else if (node->data.type == GlyphType::AP) {
       current_path.push_back(node);
       Node* pnext = EvaluateI(node->l, current_path);
       current_path.pop_back();
@@ -348,7 +348,7 @@ void ExpandAlias(Node* node) {
   assert(node && node->data.type == GlyphType::ALIAS);
   node->l = GetFromDictionary(FunctionType::I_COMBINATOR);
   node->r = GetFromDictionary(node->data.value);
-  node->data.type = GlyphType::UP;
+  node->data.type = GlyphType::AP;
 }
 
 void EvaluateLazyIsNil(Node* node) {
@@ -358,7 +358,7 @@ void EvaluateLazyIsNil(Node* node) {
   for (;;) {
     if (node->data.type == GlyphType::ALIAS) {
       ExpandAlias(node);
-    } else if (node->data.type == GlyphType::UP) {
+    } else if (node->data.type == GlyphType::AP) {
       auto l = node->l;
       if (l->data.type == GlyphType::ALIAS) {
         ExpandAlias(l);
@@ -368,7 +368,7 @@ void EvaluateLazyIsNil(Node* node) {
         } else {
           break;
         }
-      } else if (l->data.type == GlyphType::UP) {
+      } else if (l->data.type == GlyphType::AP) {
         auto l2 = l->l;
         if (l2->data.type == GlyphType::ALIAS) {
           ExpandAlias(l2);
@@ -380,7 +380,7 @@ void EvaluateLazyIsNil(Node* node) {
           } else {
             break;
           }
-        } else if (l2->data.type == GlyphType::UP) {
+        } else if (l2->data.type == GlyphType::AP) {
           v.push_back(l);
           EvaluateI(l2, v);
           v.pop_back();

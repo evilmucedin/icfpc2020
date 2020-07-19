@@ -47,7 +47,7 @@ void GlyphDecoder::InitMap() {
   RegisterGlyphType(GlyphType::DOT, "...", MASK_DOT);
   RegisterGlyphType(GlyphType::EQUALITY, "=",
                     7 * rows[0] + rows[1] + 7 * rows[2]);
-  RegisterGlyphType(GlyphType::UP, "ap", 3 * rows[0] + rows[1]);
+  RegisterGlyphType(GlyphType::AP, "ap", 3 * rows[0] + rows[1]);
   RegisterFunctionType(FunctionType::SUCCESSOR, "inc",
                        15 * rows[0] + 3 * rows[1] + 9 * rows[2] + 13 * rows[3]);
   RegisterFunctionType(FunctionType::PREDECESSOR, "dec",

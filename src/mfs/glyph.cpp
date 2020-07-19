@@ -48,7 +48,7 @@ void Glyph::Print() const {
     case GlyphType::EQUALITY:
       std::cout << "===";
       break;
-    case GlyphType::UP:
+    case GlyphType::AP:
       std::cout << "^";
       break;
     case GlyphType::FUNCTION:

@@ -99,13 +99,13 @@ Expression MessageDecoder::DecodeExpression(const std::string& s) {
     if (g == "(") {
       assert(i + 1 < vs.size());
       if (vs[i + 1] != ")") {
-        e.v.push_back(Glyph(GlyphType::UP));
-        e.v.push_back(Glyph(GlyphType::UP));
+        e.v.push_back(Glyph(GlyphType::AP));
+        e.v.push_back(Glyph(GlyphType::AP));
         e.v.push_back(Glyph(FunctionType::CONS__PAIR));
       }
     } else if (g == ",") {
-      e.v.push_back(Glyph(GlyphType::UP));
-      e.v.push_back(Glyph(GlyphType::UP));
+      e.v.push_back(Glyph(GlyphType::AP));
+      e.v.push_back(Glyph(GlyphType::AP));
       e.v.push_back(Glyph(FunctionType::CONS__PAIR));
     } else {
       e.v.push_back(DecodeGlyph(g));
