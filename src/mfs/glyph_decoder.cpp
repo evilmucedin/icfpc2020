@@ -118,6 +118,12 @@ void GlyphDecoder::InitMap() {
   RegisterFunctionType(FunctionType::MODEM, "modem",
                        63 * rows[0] + 1 * rows[1] + 1 * rows[2] + 1 * rows[3] +
                            51 * rows[4] + 13 * rows[5]);
+  RegisterFunctionType(FunctionType::F38, "f38",
+                       63 * rows[0] + 37 * rows[1] + 61 * rows[2] +
+                           47 * rows[3] + 41 * rows[4] + 63 * rows[5]);
+  RegisterFunctionType(FunctionType::INTERACT, "interact",
+                       63 * rows[0] + 33 * rows[1] + 45 * rows[2] +
+                           45 * rows[3] + 33 * rows[4] + 63 * rows[5]);
   RegisterFunctionType(FunctionType::GALAXY, "galaxy",
                        28 * rows[0] + 32 * rows[1] + 78 * rows[2] +
                            85 * rows[3] + 57 * rows[4] + 2 * rows[5] +
