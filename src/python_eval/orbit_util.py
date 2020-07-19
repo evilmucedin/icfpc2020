@@ -5,6 +5,7 @@ def sign(x):
 
 def trace_orbit(x, y, vx, vy, steps=256):
     closest = max(abs(x), abs(y))
+    farthest = 0
     for it in range(steps):
         if abs(x) >= abs(y):
             vx -= sign(x)
@@ -13,7 +14,8 @@ def trace_orbit(x, y, vx, vy, steps=256):
         x += vx
         y += vy
         closest = min(closest, max(abs(x), abs(y)))
-    return closest
+        farthest = max(farthest, max(abs(x), abs(y)))
+    return closest, farthest
 
 print(trace_orbit(-3, -48, -1, 1))
 print(trace_orbit(-3, -48, -1, 1))
