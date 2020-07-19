@@ -98,7 +98,11 @@ class OrbiterStrategy(object):
                     dist = od
                     closest_ship = other
             if closest_ship and dist < 4:
-                thrust = (random.randint(-1, 1), random.randint(-1, 1))
+                dx = random.randint(-1, 1)
+                dy = random.randint(-1, 1)
+                x = thrust[0] if thrust[0] == dx else thrust[0] + dx
+                y = thrust[1] if thrust[1] == dy else thrust[0] + dy
+                thrust = thrust[0], thrust[1]
 
             will_move = (thrust != (0, 0))
 
