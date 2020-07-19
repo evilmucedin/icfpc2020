@@ -9,7 +9,7 @@ _, [p1, p2] = send2([1, 0])
 
 
 def sign(x):
-    return 1 if x > 0 else -1
+    return 1 if x > 0 else -1 if x < 0 else 0
 
 
 def survivor_strategy(state):
@@ -142,18 +142,22 @@ def hang_middle_strategy(state):
     print('=====HANG======')
     st = State(state)
     ship = st.player_ships(st.me)[0].state
-    mid = (st.field_size + st.planet_size) / 4
-    if abs(ship.x) > mid == ship.x > 0:
-        px = -1 if ship.vx >= 0 else 0
-    else:
-        px = 1 if ship.vx <= 0 else 0
-    if abs(ship.y) > mid == ship.y > 0:
-        py = -1 if ship.vy >= 0 else 0
-    else:
-        py = 1 if ship.vy <= 0 else 0
+    mid = (st.field_size + st.planet_size)
+    dx, dy = 0, 0
+    if abs(ship.x) + abs(ship.y) < mid:
+        if sign(ship.x) != sign(ship.vx):
+            dx = -sign(ship.x)
+        if sign(ship.y) != sign(ship.vy):
+            dy = -sign(ship.y)
+    if abs(ship.x) + abs(ship.y) < 2 * mid:
+        if abs(ship.x) >= abs(ship.y) and dy != sign(ship.x) and abs(ship.vy) < 7:
+            dy = sign(ship.x)
+        if abs(ship.y) > abs(ship.x) and dx != -sign(ship.y) and abs(ship.vx) < 7:
+            dx = -sign(ship.y)
+
     print('===============')
-    if px or py:
-        return [ship.engine(px, py)]
+    if dx or dy:
+        return [ship.engine(dx, dy)]
     else:
         return []
 
@@ -162,7 +166,7 @@ def player(id, key, strategy):
     fake_state = from_python(
         [6, [0, 10, -1, id, 0, 2, [], [], 4, [], [256, 1, [448, 1, 64], [16, 128], []], [], []], 9, []])
     send2([2, key, []])
-    state = send2([3, key, [256, 5, 13, 1]])
+    state = send2([3, key, [128, 5, 13, 1]])
     images = []
     while True:
         state = send2([4, key, strategy(state)])
@@ -173,7 +177,7 @@ def player(id, key, strategy):
     images[0].save(f'player{id}.gif', save_all=True, append_images=images[1:])
 
 
-p1 = Process(target=player, args=p1 + [survivor_strategy])
+p1 = Process(target=player, args=p1 + [hang_middle_strategy])
 p2 = Process(target=player, args=p2 + [hang_middle_strategy])
 p1.start()
 p2.start()
