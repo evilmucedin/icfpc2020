@@ -115,6 +115,9 @@ void GlyphDecoder::InitMap() {
   RegisterFunctionType(
       FunctionType::IF0, "if0",
       31 * rows[0] + 1 * rows[1] + 29 * rows[2] + 7 * rows[3] + 29 * rows[4]);
+  RegisterFunctionType(FunctionType::MODEM, "modem",
+                       63 * rows[0] + 1 * rows[1] + 1 * rows[2] + 1 * rows[3] +
+                           51 * rows[4] + 13 * rows[5]);
   RegisterFunctionType(FunctionType::GALAXY, "galaxy",
                        28 * rows[0] + 32 * rows[1] + 78 * rows[2] +
                            85 * rows[3] + 57 * rows[4] + 2 * rows[5] +
