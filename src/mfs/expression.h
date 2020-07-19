@@ -21,10 +21,7 @@ class Expression {
   Node* MakeRoot();
   void MakeVector();
   void Evaluate();
-  void Print() const;
-
-  // Expression should be evaluated
-  static bool IsList(Node* node);
+  void Print();
 
   bool operator==(const Expression& r) const;
 };

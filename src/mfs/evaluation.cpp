@@ -18,9 +18,7 @@ Node* GetI(std::vector<Node*>& current_path, unsigned index) {
 }
 
 std::pair<int64_t, int64_t> GetPair(Node* node) {
-  assert(node->data.type == GlyphType::AP);
-  assert(node->l->data.type == GlyphType::AP);
-  assert(node->l->l->data.ftype == FunctionType::CONS__PAIR);
+  assert(IsPair(node));
   assert(node->l->r->data.type == GlyphType::NUMBER);
   assert(node->r->data.type == GlyphType::NUMBER);
   return {node->l->r->data.value, node->r->data.value};
@@ -134,14 +132,10 @@ Node* ApplyFunction(Node* node, std::vector<Node*>& current_path) {
       return p0;
     case FunctionType::IS_NIL:
       EvaluateLazyIsNil(p0->r);
-      if ((p0->r->data.type == GlyphType::FUNCTION) &&
-          (p0->r->data.ftype == FunctionType::NIL__EMPTY_LIST)) {
+      if (IsNil(p0->r)) {
         p0->data.type = GlyphType::FUNCTION;
         p0->data.ftype = FunctionType::K_COMBINATOR;
-      } else if ((p0->r->data.type == GlyphType::AP) &&
-                 (p0->r->l->data.type == GlyphType::AP) &&
-                 (p0->r->l->l->data.type == GlyphType::FUNCTION) &&
-                 (p0->r->l->l->data.ftype == FunctionType::CONS__PAIR)) {
+      } else if (IsPair(p0->r)) {
         p0->data.type = GlyphType::FUNCTION;
         p0->data.ftype = FunctionType::FALSE__SECOND;
       } else {
@@ -150,10 +144,9 @@ Node* ApplyFunction(Node* node, std::vector<Node*>& current_path) {
       return p0;
     case FunctionType::DRAW: {
       Evaluate(p0->r);
-      assert(Expression::IsList(p0->r));
+      assert(IsList(p0->r));
       p0->data.pic.Clear();
-      for (Node* c = p0->r; c->data.ftype != FunctionType::NIL__EMPTY_LIST;
-           c = c->r) {
+      for (Node* c = p0->r; !IsNil(c); c = c->r) {
         assert(c->l->data.type == GlyphType::AP);
         assert(c->l->l->data.ftype == FunctionType::CONS__PAIR);
         auto p = GetPair(c->l->r);
@@ -164,13 +157,10 @@ Node* ApplyFunction(Node* node, std::vector<Node*>& current_path) {
     }
     case FunctionType::MULTIPLE_DRAW: {
       Evaluate(p0->r);
-      if ((p0->r->data.type == GlyphType::FUNCTION) &&
-          ((p0->r->data.ftype == FunctionType::NIL__EMPTY_LIST))) {
+      if (IsNil(p0->r)) {
         p0->l = GetFromDictionary(FunctionType::I_COMBINATOR);
       } else {
-        assert(p0->r->data.type == GlyphType::AP);
-        assert(p0->r->l->data.type == GlyphType::AP);
-        assert(p0->r->l->l->data.ftype == FunctionType::CONS__PAIR);
+        assert(IsPair(p0->r));
         auto n1 = NewNode(GlyphType::AP);
         auto n2 = NewNode(GlyphType::AP);
         auto n3 = NewNode(GlyphType::AP);
