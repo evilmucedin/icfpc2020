@@ -5,6 +5,10 @@ def sign(x):
     return 1 if x > 0 else -1 if x < 0 else 0
 
 
+def dist(x, y):
+    return max(abs(x), abs(y))
+
+
 # ==============================================================================================================================
 class JoinResult(collections.namedtuple('JoinResult', 'budget')):
 
@@ -94,11 +98,26 @@ class Ship(
         vx, vy = self.next_round_expected_speed(thrust)
         return self.x + vx, self.y + vy
 
+    def approach_speed(self, thrust, other, other_thrust):
+        curr_d = dist(self.x - other.x, self.y - other.y)
+        sx, sy = self.next_round_expected_location(thrust)
+        ox, oy = other.next_round_expected_location(other_thrust)
+        next_d = dist(sx - ox, sy - oy)
+        return curr_d - next_d
+
 
 ship = Ship.parse([[1, 0, (-20, -10), (7, 0), [0, 3, 0, 1], 0, 64, 1], []])
 assert ship.x == -20
 assert ship.vx == 7
 assert ship.laser == 3
+
+s1 = Ship.parse([[1, 0, (-20, -10), (7, 0), [0, 3, 0, 1], 0, 64, 1], []])
+s2 = Ship.parse([[1, 0, (-20, -10), (7, 10), [0, 3, 0, 1], 0, 64, 1], []])
+assert s1.approach_speed(Thrust(0, 0), s2, Thrust(0, 1)) == -9
+
+s1 = Ship.parse([[1, 0, (-20, 10), (7, 0), [0, 3, 0, 1], 0, 64, 1], []])
+s2 = Ship.parse([[1, 0, (-20, -10), (7, 10), [0, 3, 0, 1], 0, 64, 1], []])
+assert s1.approach_speed(Thrust(0, 0), s2, Thrust(0, 1)) == 9
 
 
 # ==============================================================================================================================

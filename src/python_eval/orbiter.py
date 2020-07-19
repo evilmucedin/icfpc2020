@@ -2,7 +2,7 @@ import random
 
 from constants import *
 from orbit_util import trace_orbit, sign
-from states import State, JoinResult, ThrustPredictor
+from states import State, JoinResult, ThrustPredictor, Thrust
 
 
 class OrbiterStrategy(object):
@@ -90,7 +90,8 @@ class OrbiterStrategy(object):
                 if my_ship.laser and self.do_laser:
                     predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
                     ex, ey = enemy_ship.next_round_expected_location(predicted_thrust)
+                    approach_speed = my_ship.approach_speed(Thrust(*thrust), enemy_ship, predicted_thrust)
                     power = self.asses_laser_power(my_ship, will_move, ex, ey)
-                    if power > 0:
+                    if power > 0 and approach_speed < 1:
                         actions.append(my_ship.do_laser(ex, ey, power))
         return actions
