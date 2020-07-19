@@ -1,7 +1,7 @@
 import random
 from multiprocessing import Process
 from parser import drawState, from_python
-from states import ShipState, State, JoinResult
+from states import State, JoinResult
 from orbiter import OrbiterStrategy
 
 from interaction import send2
