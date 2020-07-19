@@ -123,10 +123,11 @@ class State(collections.namedtuple('State', 'step me planet_size field_size ship
 
 class ThrustPredictor(object):
 
-    def __init__(self, decay=0.95):
-        self.cnt = collections.Counter()
-        self.hist = []  # could use later
+    def __init__(self, decay=0.95, acorr=8):
+        self.hist = []
         self.decay = decay
+        self.acorr = acorr
+        self.lag_w = [0] * (acorr + 1)
 
     def add(self, actions):
         thrust = Thrust(0, 0)
@@ -134,18 +135,50 @@ class ThrustPredictor(object):
             if type(action) == Thrust:
                 thrust = action
                 break
+        for i in range(1, self.acorr + 1):
+            self.lag_w[i] *= self.decay
+            if i <= len(self.hist) and thrust == self.hist[-i]:
+                self.lag_w[i] += 1
         self.hist.append(thrust)
-        self.cnt[thrust] += 1
-        for k, v in self.cnt.items():
-            self.cnt[k] *= self.decay
 
     def predict(self):
         bestv = 0
         bestk = Thrust(0, 0)
-        for k, v in self.cnt.items():  # likely up to 5 elements
-            if v > bestv:
-                bestk = k
-                bestv = v
+        for i in range(1, self.acorr + 1):
+            if self.lag_w[i] > bestv:
+                bestv = self.lag_w[i]
+                bestk = self.hist[-i]
         # print(bestk)
         # print(self.hist)
         return bestk
+
+
+tp = ThrustPredictor()
+tp.add([Thrust(0, 1)])
+tp.add([Thrust(1, 0)])
+tp.add([Thrust(1, 0)])
+tp.add([Thrust(0, 1)])
+tp.add([Thrust(1, 0)])
+tp.add([Thrust(1, 0)])
+tp.add([Thrust(0, 1)])
+assert tp.predict() == Thrust(1, 0)
+
+tp = ThrustPredictor()
+tp.add([Thrust(0, 1)])
+tp.add([Thrust(0, 1)])
+tp.add([Thrust(1, 0)])
+tp.add([Thrust(0, 1)])
+tp.add([Thrust(0, 1)])
+tp.add([Thrust(1, 0)])
+tp.add([Thrust(0, 1)])
+assert tp.predict() == Thrust(0, 1)
+
+tp = ThrustPredictor()
+tp.add([Thrust(0, 1)])
+tp.add([Thrust(0, 1)])
+assert tp.predict() == Thrust(0, 1)
+
+tp = ThrustPredictor()
+tp.add([Thrust(0, 1)])
+tp.add([Thrust(1, 0)])
+assert tp.predict() == Thrust(0, 0)
