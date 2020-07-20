@@ -87,7 +87,7 @@ class Ship(
         return [2, self.id, (x, y), self.laser if power is None else power]
 
     def do_duplicate(self):
-        return [3, self.id, [self.fuel // 2, self.laser // 2, self.regen // 2, self.lives // 2]]
+        return [3, self.id, [self.fuel // 4, self.laser // 4, self.regen // 4, self.lives // 2]]
 
     def next_round_expected_speed(self, thrust):
         vx = self.vx - thrust.x
