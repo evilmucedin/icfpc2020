@@ -56,7 +56,20 @@ class OrbiterStrategy(object):
         fuel = joinres.budget - LASER_COST * laser - REGEN_COST * regen - LIVES_COST * lives
         return [fuel, laser, regen, lives]
 
-    def choose_target(self, my_ship, thrust_action, enemy_ships):
+    def choose_explode_target(self, my_ship, thrust_action, enemy_ships):
+        mindist = 10000
+        ship = None
+        if len(enemy_ships) == 0:
+            return enemy_ships[0]
+        for enemy_ship in enemy_ships:
+            predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
+            dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
+            if dist < mindist:
+                mindist = dist
+                ship = enemy_ship
+        return ship
+
+    def choose_laser_target(self, my_ship, thrust_action, enemy_ships):
         maxp = 0
         ship = None
         for enemy_ship in enemy_ships:
@@ -123,7 +136,6 @@ class OrbiterStrategy(object):
             if self.duplicate and my_ship.lives > 1 and razduplyaemsya:
                 actions.append(my_ship.do_duplicate())
 
-
             # find closest friend - if too close randomize movement (include velocity in distance computation)
             closest_ship, dist = None, 1000
             for other in my_ships:
@@ -154,7 +166,7 @@ class OrbiterStrategy(object):
 
             actions.append([0, my_ship.id, thrust])
             thrust_action = Thrust(*thrust)
-            enemy_ship = self.choose_target(my_ship, thrust_action, enemy_ships)
+            enemy_ship = self.choose_laser_target(my_ship, thrust_action, enemy_ships)
             if enemy_ship:
                 predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
                 ex, ey = enemy_ship.next_round_expected_location(predicted_thrust)
@@ -163,6 +175,11 @@ class OrbiterStrategy(object):
                     power = self.asses_laser_power(my_ship, thrust_action, enemy_ship)
                     if power > 0:
                         actions.append(my_ship.do_laser(ex, ey, power))
+
+            enemy_ship = self.choose_explode_target(my_ship, thrust_action, enemy_ships)
+            if enemy_ship:
+                predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
+                next_dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
                 if next_dist < 7 and st.me == ATACKER and self.T > 7 and len(my_ships) >= len(enemy_ships):
                     actions = [my_ship.do_explode()]
                 if next_dist < 7 and st.me == DEFENDER and self.T > 7 and len(my_ships) > len(enemy_ships):
