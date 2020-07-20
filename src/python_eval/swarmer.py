@@ -139,11 +139,8 @@ class SwarmerStrategy(object):
                 thrust_action = Thrust(0, 0)
                 enemy_ship = self.choose_target(my_ship, thrust_action, enemy_ships)
                 predicted_thrust = self.enemy_thrust[enemy_ship.id]
-                ex, ey = self.enemy_location[enemy_ship.id]
                 next_dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
-                approach_speed = my_ship.approach_speed(enemy_ship, next_dist)
-                #  and st.me == ATACKER
-                if next_dist < 5 and self.T > 7 and len(my_ships) >= len(enemy_ships):
+                if my_ship.explode_power(next_dist) and self.T > 7 and len(my_ships) >= len(enemy_ships):
                     print('boom!')
                     actions.append(my_ship.do_explode())
         return actions
