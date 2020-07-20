@@ -150,7 +150,7 @@ class SwarmerStrategy(object):
                 continue
             dist = my_ship.next_dist(no_thrust, ship, no_thrust)
             power = my_ship.explode_power(dist)
-            gains += min(ship.total_hp(), power)
+            gains += 2 * min(ship.total_hp(), power)
             if power > 0:
                 hit_ship_ids.append(ship.id)
         return gains, hit_ship_ids
