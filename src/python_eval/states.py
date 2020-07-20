@@ -41,7 +41,7 @@ class ShipAction(collections.namedtuple('ShipAction', [])):
         if d[0] == 1:
             return Explode()
         if d[0] == 2:
-            return Laser(d[1][1], d[1][1], d[2], d[3], d[4])
+            return Laser(d[1][0], d[1][1], d[2], d[3], d[4])
 
 
 # ==============================================================================================================================
