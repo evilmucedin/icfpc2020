@@ -1,6 +1,8 @@
 from orbit_util import trace_orbit, sign
 import random
 from states import State, JoinResult
+from constants import *
+from states import State, JoinResult, ThrustPredictor, Thrust
 
 '''
 def orbiter_strategy(state):
@@ -96,3 +98,43 @@ class OrbiterStrategyOld(object):
                     actions.append(my_ship.do_laser(ex, ey))
         return actions
 
+class TestStrategy(object):
+    def __init__(self):
+        self.k = 1
+
+    def pick_stats(self, res):
+        joinres = JoinResult.parse(res)
+        laser = 64
+        regen = 13
+        lives = 1
+        fuel = joinres.budget - LASER_COST * laser - REGEN_COST * regen - LIVES_COST * lives
+        return [fuel, laser, regen, lives]
+
+    def apply(self, state):
+        st = State.parse(state)
+
+        pid = state[2][1]
+        actions = []
+        my_ships = []
+        enemy_ships = []
+
+        my_ships = []
+        enemy_ships = []
+        for some_ship in st.ships:
+            if some_ship.player == st.me:
+                my_ships.append(some_ship)
+            else:
+                enemy_ships.append(some_ship)
+
+        print(f'Player test:' + '\n' + "\n".join(str(s) for s in my_ships))
+        for my_ship in my_ships:
+            my_pos = [my_ship.x, my_ship.y]
+            my_vel = [my_ship.vx, my_ship.vy]
+            cur_closest = trace_orbit(my_pos[0], my_pos[1], my_vel[0], my_vel[1])
+            thrust = (0, 0)
+            thrust = (-sign(my_pos[0]), 0) if abs(my_pos[0]) > abs(my_pos[1]) else (0, -sign(my_pos[1]))
+            actions.append([0, my_ship.id, thrust])
+            if my_ship.heat == 0:
+                self.k += 1
+                actions.append(my_ship.do_laser(-my_ship.x + self.k - 4, -my_ship.y, 64))
+        return actions
