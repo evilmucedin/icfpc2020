@@ -3,7 +3,6 @@ from multiprocessing import Process
 from parser import drawState, from_python
 from states import State, JoinResult
 from orbiter import OrbiterStrategy
-from old_strategies import OrbiterStrategyOld
 
 from interaction import send2
 from orbit_util import sign, trace_orbit

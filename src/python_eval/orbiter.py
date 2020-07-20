@@ -3,7 +3,7 @@ import random
 from constants import *
 from orbit_util import trace_orbit, sign
 from states import ATACKER
-from states import State, JoinResult, ThrustPredictor, Thrust
+from states import State, JoinResult, ThrustPredictor, Thrust, laser_power
 
 
 def min_abs_diff(x, y):
@@ -156,7 +156,7 @@ class OrbiterStrategy(object):
                 ex, ey = enemy_ship.next_round_expected_location(predicted_thrust)
                 next_dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
                 if my_ship.laser and self.do_laser:
-                    power = self.asses_laser_power(my_ship, will_move, ex, ey)
+                    power = self.asses_laser_power(my_ship, thrust_action, enemy_ship)
                     if power > 0:
                         actions.append(my_ship.do_laser(ex, ey, power))
                 if next_dist < 5 and st.me == ATACKER and self.T > 7 and len(my_ships) >= len(enemy_ships):
