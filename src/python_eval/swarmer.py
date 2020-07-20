@@ -27,19 +27,6 @@ class SwarmerStrategy(object):
         swarm_fuel = swarm_budget - LIVES_COST * n
         return [swarm_fuel + self.laser_ship_stats[0], self.laser_ship_stats[1], self.laser_ship_stats[2], n + self.laser_ship_stats[3]]
 
-    def choose_target(self, my_ship, thrust_action, enemy_ships):
-        dist = 10000
-        ship = None
-        my_pos = my_ship.next_round_expected_location(thrust_action)
-        for enemy_ship in enemy_ships:
-            predicted_thrust = self.enemy_thrust[enemy_ship.id]
-            enemy_pos = self.enemy_location[enemy_ship.id]
-            coord_diff = min_abs_diff(my_pos[0] - enemy_pos[0], my_pos[1] - enemy_pos[1])
-            if coord_diff < dist:
-                ship = enemy_ship
-                dist = coord_diff
-        return ship
-
     def reset_precomputed(self):
         self.enemy_location = {}
         self.enemy_thrust = {}
@@ -51,12 +38,11 @@ class SwarmerStrategy(object):
         self.enemy_location[enemy_ship.id] = ex, ey
         self.enemy_thrust[enemy_ship.id] = predicted_thrust
 
-    # for mothership only
     def choose_explode_target(self, my_ship, thrust_action, enemy_ships):
         mindist = 10000
-        ship = None
-        if len(enemy_ships) == 0:
-            return enemy_ships[0]
+        ship = enemy_ships[0]
+        if len(enemy_ships) == 1:
+            return ship
         for enemy_ship in enemy_ships:
             predicted_thrust = self.enemy_thrust[enemy_ship.id]
             dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
@@ -228,7 +214,7 @@ class SwarmerStrategy(object):
                     continue
             if enemy_ships:
                 thrust_action = Thrust(0, 0)
-                enemy_ship = self.choose_target(my_ship, thrust_action, enemy_ships)
+                enemy_ship = self.choose_explode_target(my_ship, thrust_action, enemy_ships)
                 predicted_thrust = self.enemy_thrust[enemy_ship.id]
                 next_dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
                 if my_ship.explode_power(next_dist) and self.T > 7 and len(my_ships) >= len(enemy_ships):
