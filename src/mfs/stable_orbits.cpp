@@ -51,7 +51,7 @@ void FindStableOrbits() {
 
   int x = 40, y = 70, c = 0;
   for (int dx = -16; dx <= 16; ++dx) {
-    std::cout << std::endl << x << ":\t";
+    std::cout << std::endl << dx << ":\t";
     for (int dy = -16; dy <= 16; ++dy) {
       if (vd[id(x, y, dx, dy)] > 250) ++c;
       std::cout << int(vd[id(x, y, dx, dy)]) << "\t";
