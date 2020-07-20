@@ -123,19 +123,30 @@ class SwarmerStrategy(object):
 
         return actions
 
-    def get_explode_gains(self, my_ship, my_ships, enemy_ships):
+    def get_explode_gains(self, my_ship, my_ships, enemy_ships, already_hit_ids):
         gains = 0
         no_thrust = Thrust(0, 0)
+        hit_ship_ids = [my_ship.id]
         for ship in my_ships:
+            if ship.id in already_hit_ids:
+                continue
             if my_ship.id == ship.id:
                 gains -= my_ship.total_hp()
             else:
                 dist = my_ship.next_dist(no_thrust, ship, no_thrust)
-                gains -= min(ship.total_hp(), my_ship.explode_power(dist))
+                power = my_ship.explode_power(dist)
+                gains -= min(ship.total_hp(), power)
+                if power > 0:
+                    hit_ship_ids.append(ship.id)
         for ship in enemy_ships:
+            if ship.id in already_hit_ids:
+                continue
             dist = my_ship.next_dist(no_thrust, ship, no_thrust)
-            gains += min(ship.total_hp(), my_ship.explode_power(dist))
-        return gains
+            power = my_ship.explode_power(dist)
+            gains += min(ship.total_hp(), power)
+            if power > 0:
+                hit_ship_ids.append(ship.id)
+        return gains, hit_ship_ids
 
     def apply(self, state):
         self.T += 1
@@ -177,8 +188,8 @@ class SwarmerStrategy(object):
         evy = np.array([ship.vy for ship in enemy_ships])
         exs, eys, evxs, evys = trace_orbit_np(ex, ey, evx, evy, self.homing_horizon)
 
-        explode_action = None
-        explode_gains = 0
+        explode_actions = []
+        already_hist_ids = set()
 
         for orbit, orbit_ships in orbits.items():
             orbit_dist_to_good = get_dist_to_good(*orbit)
@@ -247,10 +258,11 @@ class SwarmerStrategy(object):
                 predicted_thrust = self.enemy_thrust[enemy_ship.id]
                 next_dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
                 if my_ship.explode_power(next_dist) and self.T > 7 and len(my_ships) >= len(enemy_ships):
-                    new_gains = self.get_explode_gains(my_ship, my_ships, enemy_ships)
-                    if new_gains > explode_gains:
-                        explode_action = my_ship.do_explode()
-                        explode_gains = new_gains
+                    new_gains, hit_ids = self.get_explode_gains(my_ship, my_ships, enemy_ships, already_hist_ids)
+                    if new_gains > 0:
+                        explode_actions.append(my_ship.do_explode())
+                        for hit_id in hit_ids:
+                            already_hist_ids.add(hit_id)
                         continue
                 # homing
                 if self.T > self.homing_T_threshold and my_ship.fuel > 0:
@@ -291,6 +303,6 @@ class SwarmerStrategy(object):
                         thrust = random.choice(possible_thrusts_close)
                         actions.append([0, my_ship.id, thrust])
                         continue
-        if explode_action is not None:
+        for explode_action in explode_actions:
             actions.append(explode_action)
         return actions
