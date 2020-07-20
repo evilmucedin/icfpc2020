@@ -63,8 +63,8 @@ class OrbiterStrategy(object):
             predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
             enemy_pos = enemy_ship.next_round_expected_location(predicted_thrust)
             laser_power = my_ship.laser_power(thrust_action, enemy_pos[0], enemy_pos[1])
-            if laser_power > maxp:
-                maxp = laser_power
+            if laser_power > 0 and laser_power + enemy_ship.fuel > maxp:
+                maxp = laser_power + enemy_ship.fuel
                 ship = enemy_ship
         return ship
 
