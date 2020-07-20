@@ -25,7 +25,7 @@ class Thrust(collections.namedtuple('Thrust', 'x y')):
 
 
 class Position(collections.namedtuple('Position', 'x y vx vy')):
-    def acceleration(thrust=Thrust(0, 0)):
+    def acceleration(self, thrust=Thrust(0, 0)):
         ax = thrust.x
         ay = thrust.y
         if abs(self.x) >= abs(self.y):
@@ -34,18 +34,18 @@ class Position(collections.namedtuple('Position', 'x y vx vy')):
             ay += -sign(self.y)
         return ax, ay
 
-    def next_round_expected(thrust=Thrust(0, 0)):
+    def next_round_expected(self, thrust=Thrust(0, 0)):
         ax, ay = self.acceleration(thrust)
         vx = self.vx + ax
         vy = self.vy + ay
         return Position(self.x + vx, self.y + vy, vx, vy)
 
-    def valid(state):
+    def valid(self, state):
         x = self.x
         y = self.y
         return (x > -state.field_size) and (x < state.field_size) and (y > -state.field_size) and (y < state.field_size) and ((x < -state.planet_size) or (x > state.planet_size) or (y < -state.planet_size) or (y > state.planet_size))
 
-    def safe_free_fall_rounds(state, rounds):
+    def safe_free_fall_rounds(self, state, rounds):
         pos = Position(self.x, self.y, self.vx, self.vy)
         for _ in xrange(rounds):
             pos = pos.next_round_expected()
