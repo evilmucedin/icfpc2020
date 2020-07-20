@@ -5,7 +5,7 @@ from orbiter import OrbiterStrategy
 from interaction import send2
 
 def player(key, strategy, sender):
-    res = sender([2, key, [192496425430]])
+    res = sender([2, key, [103652820, 192496425430]])
     initial_stats = strategy.pick_stats(res)
     state = sender([3, key, initial_stats])
     images = []
