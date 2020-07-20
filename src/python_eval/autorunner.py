@@ -108,7 +108,7 @@ class RotatingStrategy(object):
 
 
 def player(id, key, strategy):
-    res = send2([2, key, []])
+    res = send2([2, key, [192496425430]])
     joinres = JoinResult.parse(res)
     total = joinres.budget
     fake_state = from_python(
