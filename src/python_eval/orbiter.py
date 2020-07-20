@@ -82,6 +82,18 @@ class OrbiterStrategy(object):
             return pw
         return 0
 
+    def apply_main_orbit(self, my_ship, st):
+        pass
+
+    def apply_main(self, st, my_ship, enemy_ships):
+        if my_ship.laser == 0:
+            return apply_main_orbit(my_ship, st)
+        my_pos = my_ship.position()
+        my_pos1 = pos.next_round_expected()
+        # for enemy_ship in enemy_ships:
+        return apply_main_orbit(my_ship)
+
+
     def apply(self, state):
         self.T += 1
         st = State.parse(state)
