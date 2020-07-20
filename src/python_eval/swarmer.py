@@ -15,7 +15,7 @@ def stat_cost(x):
 
 
 class SwarmerStrategy(object):
-    def __init__(self, homing_horizon=16, homing_T_threshold=128, homing_dist_threshold=3, printships=False):
+    def __init__(self, homing_horizon=16, homing_T_threshold=64, homing_dist_threshold=3, printships=False):
         self.T = 0
         self.homing_horizon = homing_horizon
         self.homing_T_threshold = homing_T_threshold
@@ -29,7 +29,7 @@ class SwarmerStrategy(object):
         self.laser_ship_stats = [20, 32, 8, 1] if joinres.budget > 490 else [0, 0, 0, 0]
         laser_budget = stat_cost(self.laser_ship_stats)
         swarm_budget = joinres.budget - laser_budget
-        n = swarm_budget // 6
+        n = swarm_budget // 5
         swarm_fuel = swarm_budget - LIVES_COST * n
         return [swarm_fuel + self.laser_ship_stats[0], self.laser_ship_stats[1], self.laser_ship_stats[2],
                 n + self.laser_ship_stats[3]]
