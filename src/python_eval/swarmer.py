@@ -221,7 +221,7 @@ class SwarmerStrategy(object):
                         actions.append([0, ship.id, thrust])
                 continue
             my_ship = orbit_ships[0]
-            if orbit_dist_to_good is not None and orbit_dist_to_good > 0:
+            if orbit_dist_to_good is not None and orbit_dist_to_good > 0 and self.T <= 48:
                 possible_thrusts = []
                 for dx in range(-2, 3):
                     for dy in range(-2, 3):
