@@ -122,8 +122,8 @@ class Ship(
         return [1, self.id]
 
     def do_thrust(self, dx, dy):
-        assert abs(dx) <= self.lives
-        assert abs(dy) <= self.lives
+        assert abs(dx) <= self.max_dv
+        assert abs(dy) <= self.max_dv
         return [0, self.id, (dx, dy)]
 
     def do_laser(self, x, y, power=None):
