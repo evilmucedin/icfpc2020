@@ -112,7 +112,7 @@ class OrbiterStrategy(object):
         self.enemy_thrust = {}
 
     def precompute_enemy_stuff(self, enemy_ship):
-        predicted_thrust = self.thrust_predictors[enemy_ship.id].predict() if enemy_ship.fuel > 0 else Thrust(0, 0)
+        predicted_thrust = self.thrust_predictors[enemy_ship.id].predict_only_call_from_precompute() if enemy_ship.fuel > 0 else Thrust(0, 0)
         ex, ey = enemy_ship.next_round_expected_location(predicted_thrust)
         self.enemy_location[enemy_ship.id] = ex, ey
         self.enemy_thrust[enemy_ship.id] = predicted_thrust
@@ -121,7 +121,7 @@ class OrbiterStrategy(object):
         self.T += 1
         st = State.parse(state)
         self.reset_precomputed()
-        actions = []
+        all_actions_of_all_ships = []
 
         for ship in st.ships:
             if ship.id not in self.thrust_predictors:
@@ -141,6 +141,7 @@ class OrbiterStrategy(object):
         if self.printships:
             print(f'T:{self.T} Player {st.me}:' + '\n' + "\n".join(str(s) for s in my_ships))
         for my_ship in my_ships:
+            actions = []
             my_ship = my_ship
             birthday = self.birthday[my_ship.id]
             age = self.T - birthday
@@ -208,4 +209,5 @@ class OrbiterStrategy(object):
                     actions = [my_ship.do_explode()]
                 if next_dist < 6 and st.me == DEFENDER and self.T > 7 and len(my_ships) > len(enemy_ships):
                     actions = [my_ship.do_explode()]
-        return actions
+            all_actions_of_all_ships.extend(actions)
+        return all_actions_of_all_ships

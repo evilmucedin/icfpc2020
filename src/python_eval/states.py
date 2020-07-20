@@ -214,7 +214,7 @@ class ThrustPredictor(object):
                 self.lag_w[i] += 1
         self.hist.append(thrust)
 
-    def predict(self):
+    def predict_only_call_from_precompute(self):
         bestv = 0
         bestk = Thrust(0, 0)
         for i in range(1, self.acorr + 1):
@@ -234,7 +234,7 @@ tp.add([Thrust(0, 1)])
 tp.add([Thrust(1, 0)])
 tp.add([Thrust(1, 0)])
 tp.add([Thrust(0, 1)])
-assert tp.predict() == Thrust(1, 0)
+assert tp.predict_only_call_from_precompute() == Thrust(1, 0)
 
 tp = ThrustPredictor()
 tp.add([Thrust(0, 1)])
@@ -244,14 +244,14 @@ tp.add([Thrust(0, 1)])
 tp.add([Thrust(0, 1)])
 tp.add([Thrust(1, 0)])
 tp.add([Thrust(0, 1)])
-assert tp.predict() == Thrust(0, 1)
+assert tp.predict_only_call_from_precompute() == Thrust(0, 1)
 
 tp = ThrustPredictor()
 tp.add([Thrust(0, 1)])
 tp.add([Thrust(0, 1)])
-assert tp.predict() == Thrust(0, 1)
+assert tp.predict_only_call_from_precompute() == Thrust(0, 1)
 
 tp = ThrustPredictor()
 tp.add([Thrust(0, 1)])
 tp.add([Thrust(1, 0)])
-assert tp.predict() == Thrust(0, 0)
+assert tp.predict_only_call_from_precompute() == Thrust(0, 0)
