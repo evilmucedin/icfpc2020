@@ -69,7 +69,7 @@ class LaserShipStrategy(object):
         else:
             return self.find_better_orbit(my_ship, st)
 
-    def apply_laser(self, st, my_ship, enemy_ships, thrust):
+    def apply_laser(self, st, my_ship, enemy_ships, thrust, enemy_location):
         self.time_left -= 1
         used_fuel = max(abs(thrust.x), abs(thrust.y))
         min_fuel = 10 + self.time_left // 5
@@ -87,8 +87,7 @@ class LaserShipStrategy(object):
         best_perfomance = 1.0
         candidate = []
         for enemy_ship in enemy_ships:
-            enemy_pos = enemy_ship.position()
-            enemy_pos1 = enemy_pos.next_round_expected()
+            enemy_pos1 = enemy_location[enemy_ship.id]
             # simple logic first
             ldamage = laser_power(enemy_pos1.x - my_pos1.x, enemy_pos1.y - my_pos1.y, max_lp)
             if ldamage <= max_lp:
@@ -117,8 +116,7 @@ class LaserShipStrategy(object):
         
         best_candidate = destroy_ship if destroy_ship else candidate
         # print("Laser: ", best_candidate[0].id, best_candidate[1], best_candidate[2])
-        enemy_pos = best_candidate[0].position()
-        enemy_pos1 = enemy_pos.next_round_expected()
+        enemy_pos1 = enemy_location[best_candidate[0].id]
         return [my_ship.do_laser(enemy_pos1.x, enemy_pos1.y, best_candidate[1])]
 
     def apply(self, st, my_ship, enemy_ships):
