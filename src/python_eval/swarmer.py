@@ -105,21 +105,8 @@ class SwarmerStrategy(object):
                 actions.append([0, my_ship.id, thrust])
                 continue
             if orbit_dist_to_good == 0 and my_ship.lives > 1:
-                actions.append(my_ship.do_duplicate())
+                actions.append(my_ship.do_duplicate_even())
                 continue
-            # birthday = self.birthday[my_ship.id]
-            # age = self.T - birthday
-            # if self.duplicate and my_ship.lives > 1 and self.T > 5:
-            #     actions.append(my_ship.do_duplicate())
-            # my_pos = [my_ship.x, my_ship.y]
-            # my_vel = [my_ship.vx, my_ship.vy]
-            # cur_closest, cur_farthest = trace_orbit(my_pos[0], my_pos[1], my_vel[0], my_vel[1])
-            # thrust = (0, 0)
-            # if cur_closest <= 17:
-            #     thrust = (-sign(my_pos[0]), -sign(my_pos[0])) if abs(my_pos[0]) > abs(my_pos[1]) else (
-            #         sign(my_pos[1]), -sign(my_pos[1]))
-            # if cur_farthest > st.field_size:
-            #     thrust = (sign(my_vel[0]), sign(my_vel[1]))
 
             # find closest friend - if too close randomize movement (include velocity in distance computation)
             closest_ship, dist = None, 1000
@@ -131,7 +118,7 @@ class SwarmerStrategy(object):
                 if od < dist:
                     dist = od
                     closest_ship = other
-            if closest_ship and dist < 4 and my_ship.heat + THRUST_HEAT <= my_ship.max_heat and my_ship.fuel > 0:
+            if closest_ship and dist < 2 and my_ship.vx == closest_ship.vx and my_ship.vy == closest_ship.vy and my_ship.heat + THRUST_HEAT <= my_ship.max_heat and my_ship.fuel > 0:
                 possible_thrusts = []
                 for dx in range(-2, 3):
                     for dy in range(-2, 3):
