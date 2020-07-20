@@ -111,11 +111,27 @@ class Ship(
         ox, oy = other.next_round_expected_location(other_thrust)
         return dist(sx - ox, sy - oy)
 
+    def laser_power(self, power, thrust, other_x, other_y):
+        x, y = self.next_round_expected_location(thrust)
+        maxx = abs(x - other_x)
+        maxy = abs(y - other_y)
+        max_xy = max(maxx, maxy)
+        min_xy = min(maxx, maxy)
+        d_xy = min_xy if 2 * min_xy < max_xy else max_xy - min_xy
+        return 3 * power * (max_xy - 2 * d_xy) // max_xy + 1 - max_xy
+
 
 ship = Ship.parse([[1, 0, (-20, -10), (7, 0), [0, 3, 0, 1], 0, 64, 1], []])
 assert ship.x == -20
 assert ship.vx == 7
 assert ship.laser == 3
+
+ship = Ship.parse([[1, 0, (0, 0), (0, 0), [0, 3, 0, 1], 0, 64, 1], []])
+assert ship.laser_power(32, Thrust(0, 0), 6, 6) == 91
+assert ship.laser_power(32, Thrust(0, 0), 6, 5) == 59, ship.laser_power(32, Thrust(0, 0), 6, 5)
+assert ship.laser_power(32, Thrust(0, 0), 6, 2) == 27
+assert ship.laser_power(32, Thrust(0, 0), 6, -2) == 27
+assert ship.laser_power(32, Thrust(0, 0), -6, -2) == 27
 
 s1 = Ship.parse([[1, 0, (-20, -10), (7, 0), [0, 3, 0, 1], 0, 64, 1], []])
 s2 = Ship.parse([[1, 0, (-20, -10), (7, 10), [0, 3, 0, 1], 0, 64, 1], []])
