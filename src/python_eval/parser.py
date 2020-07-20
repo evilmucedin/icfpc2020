@@ -199,6 +199,30 @@ def drawState(state, in_data):
     return state, im
 
 if __name__ == "__main__":
+    # state0 = [3, [0, [0] * 9, [6860065, 6862459, 6862465, 7549537, 7551595, 7551937, 7566001, 7683601, 12493153, 12493195, 12610459], 0], 0, [192496425430]]
+
+
+    # def rec(state, first=False):
+    #     if len(state[1][2]) > 11:
+    #         print(state)
+    #     if not first and state[1][1] == [0] * 9:
+    #         return
+    #     for i in range(9):
+    #         if state[1][1][i] == 0:
+    #             _, state1, _ = to_python(symbols['galaxy'](from_python(state), vec(i % 3, i // 3)))
+    #             rec(state1)
+
+    # rec(state0, first=True)
+    # assert False
+    # for line in lines:
+    #     try:
+    #         data = to_python(symbols[line[0]])
+    #         print(line[0], data)
+    #     except:
+    #         pass
+    # print(eager(car(symbols[':1305']))(0))
+    # assert False
+
     root = tk.Tk()
 
     def on_click(event):
@@ -208,17 +232,20 @@ if __name__ == "__main__":
     w.bind("<Button-1>", on_click)
     w.pack()
 
+    state = from_python([3, [2, [2, 1, 1, 1, 2, 2, 1, 2, 1], [6860065, 6862459, 6862465, 7549537, 7551595, 7551937, 7566001, 7568353, 7683601, 12493153, 12493195, 12610459], 103652820], 0, [192496425430]])
+
     # state = nil
     # state = cons(1, cons(cons(1, nil), cons(0, cons(nil, nil))))
     # state = cons(2, cons(cons(1, cons(-1, nil)), cons(0, cons(nil, nil))))
-    state = from_python([5, [2, 0, [], [], [], [], [], 44309], 9, []])
-    # state = from_python([5, [4, 8734024551968111442, [], [], [], [], (36, 0), 44309], 9, []])
+    state = from_python([5, [2, 1, [], [], [], [], [], 44309], 9, [103652820, 192496425430]])
+    state = from_python([5, [4, 2070543480156014327, [], [], [], [], (36, 0), 44309], 9, [103652820, 192496425430]])
     # state = from_python([6, [5, 8, 6725791729228031769, 0, 11, 0, [], [], 4, [0, [], [[[1, 1, (16, 86), (0, 0), [32, 0, 0, 1], 0, 64, 1], []], [[0, 0, (0, 16), (0, 0), [6, 0, 4, 1], 60, 64, 1], []]]], [16, 0, [512, 1, 64], [], []], [], []], 8, []])
 
     def process_click(x, y):
         global state, img
         print(f'click at {x}:{y} at state\n{pprint.pformat(to_python(state))}')
         state, img = drawState(state, vec(x, y))
+        print(f'new state\n{pprint.pformat(to_python(state))}\n')
         img = img.resize((SCALE_FACTOR * (2 * HALF_WIDTH + 1), SCALE_FACTOR * (2 * HALF_HEIGHT + 1)), resample=Image.BOX)
         img = ImageTk.PhotoImage(img)
         w.create_image(0, 0, image=img, anchor="nw")
