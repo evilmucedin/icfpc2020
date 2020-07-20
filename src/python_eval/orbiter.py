@@ -3,7 +3,7 @@ import random
 from constants import *
 from orbit_util import trace_orbit, sign
 from states import ATACKER, DEFENDER
-from states import State, JoinResult, ThrustPredictor, Thrust
+from states import State, JoinResult, ThrustPredictor, Thrust, laser_power
 
 
 def min_abs_diff(x, y):
@@ -34,15 +34,19 @@ def move_towards(x, vx, tx):
         return s
 
 class LaserShipStrategy(object):
-    def apply_main_orbit(self, my_ship, st):
-        pass
+    def __init__(self):
+        self.T = 0
 
-    def apply_main(self, st, my_ship, enemy_ships):
+    def apply_orbit(self, my_ship, st):
+        return []
+
+    def apply(self, st, my_ship, enemy_ships):
+        self.T += 1
         min_fuel = 10 + (255 - self.T) // 5
         extra_fuel = my_ship.fuel - min_fuel if my_ship.fuel > min_fuel else 0
         max_lp = min(my_ship.laser, my_ship.max_heat - my_ship.heat + my_ship.regen + extra_fuel)
         if (max_lp == 0):
-            return self.apply_main_orbit(my_ship, st)
+            return self.apply_orbit(my_ship, st)
 
         my_pos = my_ship.position()
         my_pos1 = my_pos.next_round_expected()
@@ -59,7 +63,7 @@ class LaserShipStrategy(object):
             etd =  enemy_ship.energy_to_destroy()
             candidates = candidates + [[enemy_ship, 1 if ldamage >= etd else 0, min(etd, ldamage)]]
         if not candidates:
-            return apply_main_orbit(my_ship)
+            return self.apply_orbit(my_ship, st)
         
         best_candidate = candidates[0]
         enemy_pos = best_candidate[0].position()
@@ -76,6 +80,7 @@ class OrbiterStrategy(object):
         self.T = 0
         self.birthday = {}
         self.thrust_predictors = {}
+        self.laser_ship = LaserShipStrategy()
 
     def pick_stats(self, res):
         joinres = JoinResult.parse(res)
@@ -164,8 +169,8 @@ class OrbiterStrategy(object):
             print(f'T:{self.T} Player {st.me}:' + '\n' + "\n".join(str(s) for s in my_ships))
         for my_ship in my_ships:
             # TODO: beter logic
-            #if my_ship.laser > 0 and my_ship.lives == 1:
-            #    all_actions_of_all_ships.extend(self.apply_main(st, my_ship, enemy_ships))
+            # if my_ship.laser > 0 and my_ship.lives == 1:
+            #    all_actions_of_all_ships.extend(self.laser_ship.apply(st, my_ship, enemy_ships))
             actions = []
             my_ship = my_ship
             birthday = self.birthday[my_ship.id]
