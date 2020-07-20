@@ -33,6 +33,40 @@ def move_towards(x, vx, tx):
     else:
         return s
 
+class LaserShipStrategy(object):
+    def apply_main_orbit(self, my_ship, st):
+        pass
+
+    def apply_main(self, st, my_ship, enemy_ships):
+        min_fuel = 10 + (255 - self.T) // 5
+        extra_fuel = my_ship.fuel - min_fuel if my_ship.fuel > min_fuel else 0
+        max_lp = min(my_ship.laser, my_ship.max_heat - my_ship.heat + my_ship.regen + extra_fuel)
+        if (max_lp == 0):
+            return self.apply_main_orbit(my_ship, st)
+
+        my_pos = my_ship.position()
+        my_pos1 = my_pos.next_round_expected()
+        my_pos2 = my_pos.next_round_expected()
+            
+        candidates = []
+        for enemy_ship in enemy_ships:
+            enemy_pos = enemy_ship.position()
+            enemy_pos1 = enemy_pos.next_round_expected()
+            # simple logic first
+            ldamage = laser_power(enemy_pos1.x - my_pos1.x, enemy_pos1.y - my_pos1.y, max_lp)
+            if ldamage <= max_lp:
+                continue
+            etd =  enemy_ship.energy_to_destroy()
+            candidates = candidates + [[enemy_ship, 1 if ldamage >= etd else 0, min(etd, ldamage)]]
+        if not candidates:
+            return apply_main_orbit(my_ship)
+        
+        best_candidate = candidates[0]
+        enemy_pos = best_candidate[0].position()
+        enemy_pos1 = enemy_pos.next_round_expected()
+        actions = []
+        actions.append(my_ship.do_laser(enemy_pos1.x, enemy_pos1.x, max_lp))
+        return actions
 
 class OrbiterStrategy(object):
     def __init__(self, do_laser, printships, duplicate):
@@ -48,7 +82,7 @@ class OrbiterStrategy(object):
         if joinres.budget > 490:  # atacker
             laser = 64
             regen = 10
-            lives = 2
+            lives = 1
         else:
             laser = 16
             regen = 16
@@ -95,40 +129,6 @@ class OrbiterStrategy(object):
             return pw
         return 0
 
-    def apply_main_orbit(self, my_ship, st):
-        pass
-
-    def apply_main(self, st, my_ship, enemy_ships):
-        min_fuel = 10 + (255 - self.T) // 5
-        extra_fuel = my_ship.fuel - min_fuel if my_ship.fuel > min_fuel else 0
-        max_lp = min(my_ship.laser, my_ship.max_heat - my_ship.heat + my_ship.regen + extra_fuel)
-        if (max_lp == 0):
-            return self.apply_main_orbit(my_ship, st)
-
-        my_pos = my_ship.position()
-        my_pos1 = my_pos.next_round_expected()
-        my_pos2 = my_pos.next_round_expected()
-            
-        candidates = []
-        for enemy_ship in enemy_ships:
-            enemy_pos = enemy_ship.position()
-            enemy_pos1 = enemy_pos.next_round_expected()
-            # simple logic first
-            ldamage = laser_power(enemy_pos1.x - my_pos1.x, enemy_pos1.y - my_pos1.y, max_lp)
-            if ldamage <= max_lp:
-                continue
-            etd =  enemy_ship.energy_to_destroy()
-            candidates = candidates + [[enemy_ship, 1 if ldamage >= etd else 0, min(etd, ldamage)]]
-        if not candidates:
-            return apply_main_orbit(my_ship)
-        
-        best_candidate = candidates[0]
-        enemy_pos = best_candidate[0].position()
-        enemy_pos1 = enemy_pos.next_round_expected()
-        actions = []
-        actions.append(my_ship.do_laser(enemy_pos1.x, enemy_pos1.x, max_lp))
-        return actions
-
     def reset_precomputed(self):
         self.enemy_location = {}
         self.enemy_thrust = {}
@@ -163,6 +163,9 @@ class OrbiterStrategy(object):
         if self.printships:
             print(f'T:{self.T} Player {st.me}:' + '\n' + "\n".join(str(s) for s in my_ships))
         for my_ship in my_ships:
+            # TODO: beter logic
+            #if my_ship.laser > 0 and my_ship.lives == 1:
+            #    all_actions_of_all_ships.extend(self.apply_main(st, my_ship, enemy_ships))
             actions = []
             my_ship = my_ship
             birthday = self.birthday[my_ship.id]
