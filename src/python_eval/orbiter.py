@@ -68,13 +68,17 @@ class OrbiterStrategy(object):
                 ship = enemy_ship
         return ship
 
-    def asses_laser_power(self, my_ship, will_move, ex, ey):
-        can_take_heat = my_ship.max_heat + my_ship.regen - my_ship.heat - (THRUST_HEAT if will_move else 0)
-        x, y = my_ship.next_round_expected_location()
-        dist = abs(x - ex) + abs(y - ey)
+    def asses_laser_power(self, my_ship, thrust_action, enemy_ship):
+        can_take_heat = my_ship.max_heat + my_ship.regen - my_ship.heat - (THRUST_HEAT if thrust_action != Thrust(0, 0) else 0)
         pw = min(can_take_heat, my_ship.laser)
-        if pw * 3 - dist > 40 or pw == my_ship.laser:
-            return pw
+
+        predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
+        enemy_pos = enemy_ship.next_round_expected_location(predicted_thrust)
+
+        laser_power = my_ship.laser_power(thrust_action, enemy_pos[0], enemy_pos[1], pw)
+
+        if laser_power > 0:
+            return laser_power
         return 0
 
     def apply(self, state):
@@ -151,10 +155,9 @@ class OrbiterStrategy(object):
                 predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
                 ex, ey = enemy_ship.next_round_expected_location(predicted_thrust)
                 next_dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
-                approach_speed = my_ship.approach_speed(enemy_ship, next_dist)
                 if my_ship.laser and self.do_laser:
                     power = self.asses_laser_power(my_ship, will_move, ex, ey)
-                    if power > 0 and approach_speed < 1:
+                    if power > 0:
                         actions.append(my_ship.do_laser(ex, ey, power))
                 if next_dist < 5 and st.me == ATACKER and self.T > 7 and len(my_ships) >= len(enemy_ships):
                     actions.append(my_ship.do_explode())
