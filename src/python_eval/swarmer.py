@@ -230,15 +230,6 @@ class SwarmerStrategy(object):
                 thrust_action = Thrust(0, 0)
                 enemy_ship = self.choose_target(my_ship, thrust_action, enemy_ships)
                 predicted_thrust = self.enemy_thrust[enemy_ship.id]
-                vx, vy = my_ship.next_vec_to_other(enemy_ship, predicted_thrust)
-                if my_ship.fuel >= 2 and distfun(vx, vy) >= 2 and my_ship.can_take_heat() >= 2 * THRUST_HEAT and my_ship.max_dv == 2:
-                    vx = -2 * sign(vx) if abs(vx) > 1 else -sign(vx)
-                    vy = -2 * sign(vy) if abs(vy) > 1 else -sign(vy)
-                    thrust_action = Thrust(vx, vy)
-                elif my_ship.fuel >= 1 and distfun(vx, vy) >= 1 and my_ship.can_take_heat() >= THRUST_HEAT:
-                    thrust_action = Thrust(-sign(vx), -sign(vy))
-                if thrust_action != Thrust(0, 0):
-                    actions.append(my_ship.do_thrust(*thrust_action))
                 next_dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
                 if my_ship.explode_power(next_dist) and self.T > 7 and len(my_ships) >= len(enemy_ships):
                     print('boom!')
