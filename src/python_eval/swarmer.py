@@ -82,14 +82,20 @@ class SwarmerStrategy(object):
             # print('dist', orbit_dist_to_good, len(orbit_ships))
             if len(orbit_ships) > 1:
                 possible_thrusts = []
+                target_dist = 3 if sum(ship.lives for ship in orbit_ships) >= 32 else 0
                 for dx in range(-2, 3):
                     for dy in range(-2, 3):
+                        if dx == 0 and dy == 0:
+                            continue
                         new_dist_to_good = get_dist_to_good(*gravity_step(orbit[0], orbit[1], orbit[2] + dx, orbit[3] + dy))
-                        if new_dist_to_good is not None and new_dist_to_good == 0:
+                        if new_dist_to_good is not None and new_dist_to_good < target_dist:
+                            target_dist = new_dist_to_good
+                            possible_thrusts = []
+                        if new_dist_to_good is not None and new_dist_to_good == target_dist:
                             possible_thrusts.append((-dx, -dy))
                 if possible_thrusts:
-                    for ship in orbit_ships:
-                        thrust = random.choice(possible_thrusts)
+                    random.shuffle(possible_thrusts)
+                    for ship, thrust in zip(orbit_ships[1:], possible_thrusts):
                         actions.append([0, ship.id, thrust])
                 continue
             my_ship = orbit_ships[0]
