@@ -3,12 +3,11 @@ import random
 from constants import *
 from orbit_util import trace_orbit, sign
 from states import ATACKER, DEFENDER
-from states import State, JoinResult, ThrustPredictor, Thrust, laser_power
+from states import State, JoinResult, ThrustPredictor, Thrust
 
 
 def min_abs_diff(x, y):
     return min(abs(x), abs(y))
-
 
 
 def move_towards(x, vx, tx):
@@ -33,6 +32,7 @@ def move_towards(x, vx, tx):
         return 0
     else:
         return s
+
 
 class OrbiterStrategy(object):
     def __init__(self, do_laser, printships, duplicate):
@@ -69,7 +69,8 @@ class OrbiterStrategy(object):
         return ship
 
     def asses_laser_power(self, my_ship, thrust_action, enemy_ship):
-        can_take_heat = my_ship.max_heat + my_ship.regen - my_ship.heat - (THRUST_HEAT if thrust_action != Thrust(0, 0) else 0)
+        can_take_heat = my_ship.max_heat + my_ship.regen - my_ship.heat - (
+            THRUST_HEAT if thrust_action != Thrust(0, 0) else 0)
         pw = min(can_take_heat, my_ship.laser)
 
         predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
@@ -110,7 +111,7 @@ class OrbiterStrategy(object):
                 actions.append(my_ship.do_duplicate())
             my_pos = [my_ship.x, my_ship.y]
             my_vel = [my_ship.vx, my_ship.vy]
-            cur_closest, cur_farthest = trace_orbit(my_pos[0], my_pos[1], my_vel[0], my_vel[1], 265-self.T)
+            cur_closest, cur_farthest = trace_orbit(my_pos[0], my_pos[1], my_vel[0], my_vel[1], 265 - self.T)
             thrust = (0, 0)
             if cur_closest <= 24:
                 thrust = (-sign(my_pos[0]), -sign(my_pos[0])) if abs(my_pos[0]) > abs(my_pos[1]) else (
@@ -158,7 +159,7 @@ class OrbiterStrategy(object):
                     if power > 0:
                         actions.append(my_ship.do_laser(ex, ey, power))
                 if next_dist < 5 and st.me == ATACKER and self.T > 7 and len(my_ships) >= len(enemy_ships):
-                    actions.append(my_ship.do_explode())
+                    actions = [my_ship.do_explode()]
                 if next_dist < 7 and st.me == DEFENDER and self.T > 7 and len(my_ships) > len(enemy_ships):
-                    actions.append(my_ship.do_explode())
+                    actions = [my_ship.do_explode()]
         return actions
