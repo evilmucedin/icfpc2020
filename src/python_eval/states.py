@@ -45,11 +45,11 @@ class Position(collections.namedtuple('Position', 'x y vx vy')):
         y = self.y
         return (x > -state.field_size) and (x < state.field_size) and (y > -state.field_size) and (y < state.field_size) and ((x < -state.planet_size) or (x > state.planet_size) or (y < -state.planet_size) or (y > state.planet_size))
 
-    def safe_free_fall_rounds(state, rounds)
+    def safe_free_fall_rounds(state, rounds):
         pos = Position(self.x, self.y, self.vx, self.vy)
         for _ in xrange(rounds):
             pos = pos.next_round_expected()
-            if not pos.valid(state)
+            if not pos.valid(state):
                 return False
         return True
 
