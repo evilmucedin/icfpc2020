@@ -62,21 +62,20 @@ class LaserShipStrategy(object):
     def apply_orbit(self, my_ship, st):
         tl = min(self.time_left, 20)
         ttd = my_ship.position().safe_free_fall_rounds(st, tl)
-        print('*** Time to death = ', ttd)
+        # print('*** Time to death = ', ttd)
         if ttd >= tl:
             return [], Thrust(0, 0)
         else:
             return self.find_better_orbit(my_ship, st)
 
-    def apply(self, st, my_ship, enemy_ships):
-        self.time_left -= 1
-        actions, thrust = self.apply_orbit(my_ship, st)
+    def apply_laser(self, st, my_ship, enemy_ships, thrust):
+        used_fuel = max(abs(thrust.x), abs(thrust.y))
         min_fuel = 10 + self.time_left // 5
-        extra_fuel = my_ship.fuel - min_fuel if my_ship.fuel > min_fuel else 0
-        max_lp = min(my_ship.laser, my_ship.max_heat - my_ship.heat + my_ship.regen + extra_fuel)
-        exp_lp = min(my_ship.laser, my_ship.max_heat - my_ship.heat + my_ship.regen)
+        extra_fuel = my_ship.fuel - used_fuel - min_fuel if my_ship.fuel > used_fuel + min_fuel else 0
+        max_lp = min(my_ship.laser, my_ship.max_heat - my_ship.heat - THRUST_HEAT * used_fuel + my_ship.regen + extra_fuel)
+        exp_lp = min(my_ship.laser, my_ship.max_heat - my_ship.heat - THRUST_HEAT * used_fuel + my_ship.regen)
         if (max_lp == 0):
-            return actions
+            return []
 
         my_pos = my_ship.position()
         my_pos1 = my_pos.next_round_expected(thrust)
@@ -113,14 +112,19 @@ class LaserShipStrategy(object):
                     best_perfomance = ldamage_low / cost_low
                     candidate = [enemy_ship, exp_lp, ldamage_low]
         if not destroy_ship and not candidate:
-            return actions
+            return []
         
         best_candidate = destroy_ship if destroy_ship else candidate
         print("Laser: ", best_candidate[0].id, best_candidate[1], best_candidate[2])
         enemy_pos = best_candidate[0].position()
         enemy_pos1 = enemy_pos.next_round_expected()
-        actions.append(my_ship.do_laser(enemy_pos1.x, enemy_pos1.y, best_candidate[1]))
-        return actions
+        return [my_ship.do_laser(enemy_pos1.x, enemy_pos1.y, best_candidate[1])]
+
+    def apply(self, st, my_ship, enemy_ships):
+        self.time_left -= 1
+        actions1, thrust = self.apply_orbit(my_ship, st)
+        actions2 = self.apply_laser(st, my_ship, enemy_ships, thrust)
+        return actions1 + actions2
 
 class OrbiterStrategy(object):
     def __init__(self, do_laser, printships, duplicate):
