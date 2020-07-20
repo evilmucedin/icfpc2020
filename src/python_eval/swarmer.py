@@ -231,9 +231,9 @@ class SwarmerStrategy(object):
                             *gravity_step(orbit[0], orbit[1], orbit[2] + dx, orbit[3] + dy))
                         if new_dist_to_good is not None and new_dist_to_good == orbit_dist_to_good - 1:
                             possible_thrusts.append((-dx, -dy))
-                assert possible_thrusts
-                thrust = random.choice(possible_thrusts)
-                actions.append([0, my_ship.id, thrust])
+                if possible_thrusts:
+                    thrust = random.choice(possible_thrusts)
+                    actions.append([0, my_ship.id, thrust])
                 continue
             if orbit_dist_to_good == 0 and my_ship.lives > 1:
                 actions.append(my_ship.do_duplicate_even())
