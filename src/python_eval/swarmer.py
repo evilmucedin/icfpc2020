@@ -1,7 +1,7 @@
 import random
 
 from constants import *
-from orbit_util import sign, get_dist_to_good, gravity_step
+from orbit_util import sign, get_dist_to_good, gravity_step, trace_orbit
 from states import State, JoinResult, ThrustPredictor, Thrust, dist as distfun
 
 
