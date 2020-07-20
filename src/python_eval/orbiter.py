@@ -180,8 +180,8 @@ class OrbiterStrategy(object):
             if enemy_ship:
                 predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
                 next_dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
-                if next_dist < 7 and st.me == ATACKER and self.T > 7 and len(my_ships) >= len(enemy_ships):
+                if next_dist < 6 and st.me == ATACKER and self.T > 7 and len(my_ships) >= len(enemy_ships):
                     actions = [my_ship.do_explode()]
-                if next_dist < 7 and st.me == DEFENDER and self.T > 7 and len(my_ships) > len(enemy_ships):
+                if next_dist < 6 and st.me == DEFENDER and self.T > 7 and len(my_ships) > len(enemy_ships):
                     actions = [my_ship.do_explode()]
         return actions
