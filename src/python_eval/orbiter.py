@@ -158,8 +158,8 @@ class OrbiterStrategy(object):
                     power = self.asses_laser_power(my_ship, thrust_action, enemy_ship)
                     if power > 0:
                         actions.append(my_ship.do_laser(ex, ey, power))
-                if next_dist < 8 and st.me == ATACKER and self.T > 7 and len(my_ships) >= len(enemy_ships):
+                if next_dist < 7 and st.me == ATACKER and self.T > 7 and len(my_ships) >= len(enemy_ships):
                     actions = [my_ship.do_explode()]
-                if next_dist < 8 and st.me == DEFENDER and self.T > 7 and len(my_ships) > len(enemy_ships):
+                if next_dist < 7 and st.me == DEFENDER and self.T > 7 and len(my_ships) > len(enemy_ships):
                     actions = [my_ship.do_explode()]
         return actions
