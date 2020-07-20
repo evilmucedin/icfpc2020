@@ -12,6 +12,7 @@
 #include <string>
 
 void TestAll(const std::string& filename);
+void FindStableOrbits();
 
 namespace {
 std::string messages_dir = "../src/mfs/messages/";
@@ -44,6 +45,7 @@ void ProcessGalaxy(const std::string& filename) {
 }
 
 int main(int argc, char* argv[]) {
+  FindStableOrbits();
   ProcessGalaxy(messages_dir + "galaxy.txt");
   TestAll(messages_dir + "test.txt");
   if (argc >= 2) {
