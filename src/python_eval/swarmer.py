@@ -1,9 +1,9 @@
 import random
 
 from constants import *
-from orbit_util import trace_orbit, sign, get_dist_to_good, gravity_step
-from states import ATACKER
-from states import State, JoinResult, ThrustPredictor, Thrust
+from orbit_util import sign, get_dist_to_good, gravity_step
+from states import State, JoinResult, ThrustPredictor, Thrust, dist as distfun
+
 
 def min_abs_diff(x, y):
     return min(abs(x), abs(y))
@@ -40,13 +40,13 @@ class SwarmerStrategy(object):
                 dist = coord_diff
         return ship
 
-
     def reset_precomputed(self):
         self.enemy_location = {}
         self.enemy_thrust = {}
 
     def precompute_enemy_stuff(self, enemy_ship):
-        predicted_thrust = self.thrust_predictors[enemy_ship.id].predict_only_call_from_precompute() if enemy_ship.fuel > 0 else Thrust(0, 0)
+        predicted_thrust = self.thrust_predictors[
+            enemy_ship.id].predict_only_call_from_precompute() if enemy_ship.fuel > 0 else Thrust(0, 0)
         ex, ey = enemy_ship.next_round_expected_location(predicted_thrust)
         self.enemy_location[enemy_ship.id] = ex, ey
         self.enemy_thrust[enemy_ship.id] = predicted_thrust
@@ -173,7 +173,6 @@ class SwarmerStrategy(object):
                 orbits[orbit] = []
             orbits[orbit].append(my_ship)
 
-        
         for orbit, orbit_ships in orbits.items():
             orbit_dist_to_good = get_dist_to_good(*orbit)
             # print('dist', orbit_dist_to_good, len(orbit_ships))
@@ -184,7 +183,8 @@ class SwarmerStrategy(object):
                     for dy in range(-2, 3):
                         if dx == 0 and dy == 0:
                             continue
-                        new_dist_to_good = get_dist_to_good(*gravity_step(orbit[0], orbit[1], orbit[2] + dx, orbit[3] + dy))
+                        new_dist_to_good = get_dist_to_good(
+                            *gravity_step(orbit[0], orbit[1], orbit[2] + dx, orbit[3] + dy))
                         if new_dist_to_good is not None and new_dist_to_good < target_dist:
                             target_dist = new_dist_to_good
                             possible_thrusts = []
@@ -200,7 +200,8 @@ class SwarmerStrategy(object):
                 possible_thrusts = []
                 for dx in range(-2, 3):
                     for dy in range(-2, 3):
-                        new_dist_to_good = get_dist_to_good(*gravity_step(orbit[0], orbit[1], orbit[2] + dx, orbit[3] + dy))
+                        new_dist_to_good = get_dist_to_good(
+                            *gravity_step(orbit[0], orbit[1], orbit[2] + dx, orbit[3] + dy))
                         if new_dist_to_good is not None and new_dist_to_good == orbit_dist_to_good - 1:
                             possible_thrusts.append((-dx, -dy))
                 assert possible_thrusts
@@ -225,7 +226,8 @@ class SwarmerStrategy(object):
                 possible_thrusts = []
                 for dx in range(-2, 3):
                     for dy in range(-2, 3):
-                        new_dist_to_good = get_dist_to_good(*gravity_step(orbit[0], orbit[1], orbit[2] + dx, orbit[3] + dy))
+                        new_dist_to_good = get_dist_to_good(
+                            *gravity_step(orbit[0], orbit[1], orbit[2] + dx, orbit[3] + dy))
                         if new_dist_to_good is not None and new_dist_to_good == 0:
                             possible_thrusts.append((-dx, -dy))
                 if possible_thrusts:
@@ -236,6 +238,15 @@ class SwarmerStrategy(object):
                 thrust_action = Thrust(0, 0)
                 enemy_ship = self.choose_target(my_ship, thrust_action, enemy_ships)
                 predicted_thrust = self.enemy_thrust[enemy_ship.id]
+                vx, vy = my_ship.next_vec_to_other(enemy_ship, predicted_thrust)
+                if my_ship.fuel >= 2 and distfun(vx, vy) >= 2 and my_ship.can_take_heat() >= 2 * THRUST_HEAT:
+                    vx = -2 * sign(vx) if abs(vx) > 1 else -sign(vx)
+                    vy = -2 * sign(vy) if abs(vy) > 1 else -sign(vy)
+                    thrust_action = Thrust(vx, vy)
+                elif my_ship.fuel >= 1 and distfun(vx, vy) >= 1 and my_ship.can_take_heat() >= THRUST_HEAT:
+                    thrust_action = Thrust(-sign(vx), -sign(vy))
+                if thrust_action != Thrust(0, 0):
+                    actions.append(my_ship.do_thrust(*thrust_action))
                 next_dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
                 if my_ship.explode_power(next_dist) and self.T > 7 and len(my_ships) >= len(enemy_ships):
                     print('boom!')
