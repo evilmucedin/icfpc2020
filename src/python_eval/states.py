@@ -20,9 +20,25 @@ class JoinResult(collections.namedtuple('JoinResult', 'budget')):
 
 
 # ==============================================================================================================================
-
 class Thrust(collections.namedtuple('Thrust', 'x y')):
     pass
+
+
+class Position(collections.namedtuple('Position', 'x y vx vy')):
+    def acceleration(thrust=Thrust(0, 0)):
+        ax = thrust.x
+        ay = thrust.y
+        if abs(self.x) >= abs(self.y):
+            ax += -sign(self.x)
+        if abs(self.y) >= abs(self.x):
+            ay += -sign(self.y)
+        return ax, ay
+
+    def next_round_expected(thrust=Thrust(0, 0)):
+        ax, ay = self.acceleration(thrust)
+        vx = self.vx + ax
+        vy = self.vy + ay
+        return Position(self.x + vx, self.y + vy, vx, vy)
 
 
 class Laser(collections.namedtuple('Laser', 'x y pwr dmg hzchto')):
@@ -86,6 +102,9 @@ class Ship(
     def total_hp(self):
         return self.fuel + self.laser + self.regen + self.lives
 
+    def energy_to_destroy(self):
+        return self.max_heat - self.heat + self.regen + self.total_hp()
+
     def do_explode(self):
         return [1, self.id]
 
@@ -99,6 +118,9 @@ class Ship(
 
     def do_duplicate(self):
         return [3, self.id, [self.fuel // 4, self.laser // 4, self.regen // 4, self.lives // 2]]
+
+    def position(self):
+        return Position(self.x, self.y, self.vx, self.vy)
 
     def next_round_expected_speed(self, thrust):
         vx = self.vx - thrust.x
