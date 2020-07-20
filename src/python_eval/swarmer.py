@@ -31,7 +31,7 @@ class SwarmerStrategy(object):
         self.laser_ship_stats = [20, 32, 8, 1] if joinres.budget > 490 else [0, 0, 0, 0]
         laser_budget = stat_cost(self.laser_ship_stats)
         swarm_budget = joinres.budget - laser_budget
-        n = swarm_budget // 5
+        n = swarm_budget // 6
         swarm_fuel = swarm_budget - LIVES_COST * n
         return [swarm_fuel + self.laser_ship_stats[0], self.laser_ship_stats[1], self.laser_ship_stats[2],
                 n + self.laser_ship_stats[3]]
@@ -221,10 +221,12 @@ class SwarmerStrategy(object):
                         actions.append([0, ship.id, thrust])
                 continue
             my_ship = orbit_ships[0]
-            if orbit_dist_to_good is not None and orbit_dist_to_good > 0:
+            if orbit_dist_to_good is not None and orbit_dist_to_good > 0 and self.T <= 48:
                 possible_thrusts = []
                 for dx in range(-2, 3):
                     for dy in range(-2, 3):
+                        if my_ship.fuel == 1 and max(abs(dx), abs(dy)) == 2:
+                            continue
                         new_dist_to_good = get_dist_to_good(
                             *gravity_step(orbit[0], orbit[1], orbit[2] + dx, orbit[3] + dy))
                         if new_dist_to_good is not None and new_dist_to_good == orbit_dist_to_good - 1:
@@ -237,28 +239,6 @@ class SwarmerStrategy(object):
                 actions.append(my_ship.do_duplicate_even())
                 continue
 
-            # find closest friend - if too close randomize movement (include velocity in distance computation)
-            closest_ship, dist = None, 1000
-            for other in my_ships:
-                if other.id == my_ship.id:
-                    continue
-                od = abs(other.x - my_ship.x) + abs(other.y - my_ship.y) + abs(other.vx - my_ship.vx) + abs(
-                    other.vy - my_ship.vy)
-                if od < dist:
-                    dist = od
-                    closest_ship = other
-            if closest_ship and dist < 2 and my_ship.vx == closest_ship.vx and my_ship.vy == closest_ship.vy and my_ship.heat + THRUST_HEAT <= my_ship.max_heat and my_ship.fuel > 0:
-                possible_thrusts = []
-                for dx in range(-2, 3):
-                    for dy in range(-2, 3):
-                        new_dist_to_good = get_dist_to_good(
-                            *gravity_step(orbit[0], orbit[1], orbit[2] + dx, orbit[3] + dy))
-                        if new_dist_to_good is not None and new_dist_to_good == 0:
-                            possible_thrusts.append((-dx, -dy))
-                if possible_thrusts:
-                    thrust = random.choice(possible_thrusts)
-                    actions.append([0, my_ship.id, thrust])
-                    continue
             if enemy_ships:
                 thrust_action = Thrust(0, 0)
                 enemy_ship = self.choose_explode_target(my_ship, thrust_action, enemy_ships)
@@ -281,6 +261,8 @@ class SwarmerStrategy(object):
                     quo_idx = None
                     for dx in range(-2, 3):
                         for dy in range(-2, 3):
+                            if my_ship.fuel == 1 and max(abs(dx), abs(dy)) == 2:
+                                continue
                             dist_to_good = get_dist_to_good(
                                 *gravity_step(orbit[0], orbit[1], orbit[2] + dx, orbit[3] + dy))
                             if dist_to_good is not None and dist_to_good == 0:
