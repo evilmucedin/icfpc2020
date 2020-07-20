@@ -121,18 +121,19 @@ def player(id, key, strategy):
     while True:
         T += 1
         state = send2([4, key, strategy.apply(state)])
-        images.append(drawState(fake_state, from_python(state))[1])
+        # images.append(drawState(fake_state, from_python(state))[1])
         # intermediate gif saves
-        if T % 10 == 0:
-            images[0].save(f'player{id}.gif', save_all=True, append_images=images[1:])
+        # if T % 10 == 0:
+        #     images[0].save(f'player{id}.gif', save_all=True, append_images=images[1:])
         if state[1] == 2:
             print('done')
             break
-    images[0].save(f'player{id}.gif', save_all=True, append_images=images[1:])
+    # images[0].save(f'player{id}.gif', save_all=True, append_images=images[1:])
 
+# print(send2([122, 203, 410, 164, 444, 484, 202, 77, 251, 56, 456, 435, 28, 329, 257, 265, 501, 18, 190, 423, 384, 434, 266, 69, 34, 437, 203, 152, 160, 425, 245, 428, 99, 107, 192, 372, 346, 344, 169, 478, 393, 502, 201, 497, 313, 32, 281, 510, 436, 22, 237, 80, 325, 405, 184, 358, 57, 276, 359, 189, 284, 277, 198, 244]))
 
-strategy1 = SwarmerStrategy(printships=True)
-strategy2 = OrbiterStrategy(do_laser=True, printships=True, duplicate=False)
+strategy2 = SwarmerStrategy(printships=False)
+strategy1 = OrbiterStrategy(do_laser=True, printships=True, duplicate=False)
 p1 = Process(target=player, args=p1 + [strategy1])
 p2 = Process(target=player, args=p2 + [strategy2])
 p1.start()
