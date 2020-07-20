@@ -1,7 +1,8 @@
 import random
 
+import numpy as np
 from constants import *
-from orbit_util import sign, get_dist_to_good, gravity_step, trace_orbit
+from orbit_util import trace_orbit, sign, get_dist_to_good, gravity_step, trace_orbit_np
 from states import State, JoinResult, ThrustPredictor, Thrust
 
 
@@ -14,8 +15,11 @@ def stat_cost(x):
 
 
 class SwarmerStrategy(object):
-    def __init__(self, printships=False):
+    def __init__(self, homing_horizon=16, homing_T_threshold=128, homing_dist_threshold=3, printships=False):
         self.T = 0
+        self.homing_horizon = homing_horizon
+        self.homing_T_threshold = homing_T_threshold
+        self.homing_dist_threshold = homing_dist_threshold
         self.thrust_predictors = {}
         self.mothership_id = None
         self.printships = printships
@@ -25,7 +29,7 @@ class SwarmerStrategy(object):
         self.laser_ship_stats = [20, 32, 8, 1] if joinres.budget > 490 else [0, 0, 0, 0]
         laser_budget = stat_cost(self.laser_ship_stats)
         swarm_budget = joinres.budget - laser_budget
-        n = swarm_budget // 4
+        n = swarm_budget // 6
         swarm_fuel = swarm_budget - LIVES_COST * n
         return [swarm_fuel + self.laser_ship_stats[0], self.laser_ship_stats[1], self.laser_ship_stats[2],
                 n + self.laser_ship_stats[3]]
@@ -167,6 +171,12 @@ class SwarmerStrategy(object):
                 orbits[orbit] = []
             orbits[orbit].append(my_ship)
 
+        ex = np.array([ship.x for ship in enemy_ships])
+        ey = np.array([ship.y for ship in enemy_ships])
+        evx = np.array([ship.vx for ship in enemy_ships])
+        evy = np.array([ship.vy for ship in enemy_ships])
+        exs, eys, evxs, evys = trace_orbit_np(ex, ey, evx, evy, self.homing_horizon)
+
         explode_action = None
         explode_gains = 0
 
@@ -241,7 +251,46 @@ class SwarmerStrategy(object):
                     if new_gains > explode_gains:
                         explode_action = my_ship.do_explode()
                         explode_gains = new_gains
-
+                        continue
+                # homing
+                if self.T > self.homing_T_threshold and my_ship.fuel > 0:
+                    possible_thrusts = []
+                    mx = []
+                    my = []
+                    mvx = []
+                    mvy = []
+                    quo_idx = None
+                    for dx in range(-2, 3):
+                        for dy in range(-2, 3):
+                            dist_to_good = get_dist_to_good(
+                                *gravity_step(orbit[0], orbit[1], orbit[2] + dx, orbit[3] + dy))
+                            if dist_to_good is not None and dist_to_good == 0:
+                                if dx == 0 and dy == 0:
+                                    quo_idx = len(mx)
+                                possible_thrusts.append((-dx, -dy))
+                                mx.append(orbit[0])
+                                my.append(orbit[1])
+                                mvx.append(orbit[2] + dx)
+                                mvy.append(orbit[3] + dy)
+                    mx, my, mvx, mvy = map(np.array, (mx, my, mvx, mvy))
+                    mxs, mys, _, _ = trace_orbit_np(mx, my, mvx, mvy, self.homing_horizon)
+                    dxs = np.abs(mxs[:, np.newaxis] - exs[np.newaxis])
+                    dys = np.abs(mys[:, np.newaxis] - eys[np.newaxis])
+                    ds = np.maximum(dxs, dys)
+                    ds = np.min(ds, axis=(1, 2))
+                    possible_thrusts_close = []
+                    for i in range(len(possible_thrusts)):
+                        if ds[i] <= self.homing_dist_threshold:
+                            possible_thrusts_close.append(possible_thrusts[i])
+                            if quo_idx == i:
+                                print('cancel homing')
+                                possible_thrusts_close = []
+                                break
+                    if possible_thrusts_close:
+                        print('homing!')
+                        thrust = random.choice(possible_thrusts_close)
+                        actions.append([0, my_ship.id, thrust])
+                        continue
         if explode_action is not None:
             actions.append(explode_action)
         return actions

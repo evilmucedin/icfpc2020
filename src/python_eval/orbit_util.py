@@ -15,6 +15,26 @@ def gravity_step(x, y, vx, vy):
     y += vy
     return x, y, vx, vy
 
+def gravity_step_np(x, y, vx, vy):
+    vx = vx - np.sign(x) * (abs(x) >= abs(y))
+    vy = vy - np.sign(y) * (abs(y) >= abs(x))
+    x = x + vx
+    y = y + vy
+    return x, y, vx, vy
+
+def trace_orbit_np(x, y, vx, vy, steps):
+    xs = []
+    ys = []
+    vxs = []
+    vys = []
+    for it in range(steps):
+        x, y, vx, vy = gravity_step_np(x, y, vx, vy)
+        xs.append(x)
+        ys.append(y)
+        vxs.append(vx)
+        vys.append(vy)
+    return np.stack(xs, axis=-1), np.stack(ys, axis=-1), np.stack(vxs, axis=-1), np.stack(vys, axis=-1)
+
 def trace_orbit(x, y, vx, vy, steps=256):
     closest = max(abs(x), abs(y))
     farthest = 0
@@ -24,7 +44,7 @@ def trace_orbit(x, y, vx, vy, steps=256):
         farthest = max(farthest, max(abs(x), abs(y)))
     return closest, farthest
 
-def is_good_orbit(x, y, vx, vy, steps=256):
+def is_good_orbit(x, y, vx, vy, steps=512):
     farthest = 0
     for it in range(steps):
         x, y, vx, vy = gravity_step(x, y, vx, vy)
@@ -46,7 +66,7 @@ if __name__ == "__main__":
             for vx in range(-MAX_VELOCITY, MAX_VELOCITY + 1):
                 for vy in range(-MAX_VELOCITY, MAX_VELOCITY + 1):
                     rev_edges[x + FIELD_SIZE, y + FIELD_SIZE, vx + MAX_VELOCITY, vy + MAX_VELOCITY] = []
-                    if is_good_orbit(x, y, vx, vy, steps=256):
+                    if is_good_orbit(x, y, vx, vy, steps=512):
                         good_orbits.append((x, y, vx, vy))
                         dist_to_good[x + FIELD_SIZE, y + FIELD_SIZE, vx + MAX_VELOCITY, vy + MAX_VELOCITY] = 0
     print(len(good_orbits))
