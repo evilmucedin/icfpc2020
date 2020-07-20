@@ -135,18 +135,16 @@ class OrbiterStrategy(object):
                 y = thrust[1] if thrust[1] == dy else thrust[0] + dy
                 thrust = x, y
 
-            if len(enemy_ships) == 1 and self.T > 200 and st.me == ATACKER:
-                enemy_ship = enemy_ships[0]
-                predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
-                ex, ey = enemy_ship.next_round_expected_location(predicted_thrust)
-                x = move_towards(my_ship.x, my_ship.vx, ex)
-                y = move_towards(my_ship.y, my_ship.vy, ey)
-                thrust = x, y
+            # if len(enemy_ships) == 1 and self.T > 200 and st.me == ATACKER:
+            #     enemy_ship = enemy_ships[0]
+            #     predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
+            #     ex, ey = enemy_ship.next_round_expected_location(predicted_thrust)
+            #     x = move_towards(my_ship.x, my_ship.vx, ex)
+            #     y = move_towards(my_ship.y, my_ship.vy, ey)
+            #     thrust = x, y
 
             if my_ship.heat + THRUST_HEAT > my_ship.max_heat:
                 thrust = 0, 0
-
-            will_move = (thrust != (0, 0))
 
             actions.append([0, my_ship.id, thrust])
             thrust_action = Thrust(*thrust)
