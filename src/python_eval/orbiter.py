@@ -61,7 +61,9 @@ class LaserShipStrategy(object):
 
     def apply_orbit(self, my_ship, st):
         tl = min(self.time_left, 20)
-        if my_ship.position().safe_free_fall_rounds(st, tl) >= tl:
+        ttd = my_ship.position().safe_free_fall_rounds(st, tl)
+        print('*** Time to death = ', ttd)
+        if ttd >= tl:
             return [], Thrust(0, 0)
         else:
             return self.find_better_orbit(my_ship, st)
