@@ -26,8 +26,8 @@ class Thrust(collections.namedtuple('Thrust', 'x y')):
 
 class Position(collections.namedtuple('Position', 'x y vx vy')):
     def acceleration(self, thrust=Thrust(0, 0)):
-        ax = thrust.x
-        ay = thrust.y
+        ax = -thrust.x
+        ay = -thrust.y
         if abs(self.x) >= abs(self.y):
             ax += -sign(self.x)
         if abs(self.y) >= abs(self.x):
@@ -47,11 +47,11 @@ class Position(collections.namedtuple('Position', 'x y vx vy')):
 
     def safe_free_fall_rounds(self, state, rounds):
         pos = Position(self.x, self.y, self.vx, self.vy)
-        for _ in xrange(rounds):
+        for i in range(rounds):
             pos = pos.next_round_expected()
             if not pos.valid(state):
-                return False
-        return True
+                return i
+        return rounds
 
 
 class Laser(collections.namedtuple('Laser', 'x y pwr dmg hzchto')):
@@ -122,8 +122,8 @@ class Ship(
         return [1, self.id]
 
     def do_thrust(self, dx, dy):
-        assert abs(dx) <= self.lives
-        assert abs(dy) <= self.lives
+        assert abs(dx) <= self.max_dv
+        assert abs(dy) <= self.max_dv
         return [0, self.id, (dx, dy)]
 
     def do_laser(self, x, y, power=None):
