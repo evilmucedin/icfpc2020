@@ -111,7 +111,9 @@ class Ship(
         ox, oy = other.next_round_expected_location(other_thrust)
         return dist(sx - ox, sy - oy)
 
-    def laser_power(self, power, thrust, other_x, other_y):
+    def laser_power(self, thrust, other_x, other_y, power=None):
+        if power == None:
+            power = self.laser
         x, y = self.next_round_expected_location(thrust)
         maxx = abs(x - other_x)
         maxy = abs(y - other_y)
@@ -126,12 +128,12 @@ assert ship.x == -20
 assert ship.vx == 7
 assert ship.laser == 3
 
-ship = Ship.parse([[1, 0, (0, 0), (0, 0), [0, 3, 0, 1], 0, 64, 1], []])
-assert ship.laser_power(32, Thrust(0, 0), 6, 6) == 91
-assert ship.laser_power(32, Thrust(0, 0), 6, 5) == 59, ship.laser_power(32, Thrust(0, 0), 6, 5)
-assert ship.laser_power(32, Thrust(0, 0), 6, 2) == 27
-assert ship.laser_power(32, Thrust(0, 0), 6, -2) == 27
-assert ship.laser_power(32, Thrust(0, 0), -6, -2) == 27
+ship = Ship.parse([[1, 0, (0, 0), (0, 0), [0, 32, 3, 1], 0, 64, 1], []])
+assert ship.laser_power(Thrust(0, 0), 6, 6) == 91
+assert ship.laser_power(Thrust(0, 0), 6, 5) == 59
+assert ship.laser_power(Thrust(0, 0), 6, 2) == 27
+assert ship.laser_power(Thrust(0, 0), 6, -2) == 27
+assert ship.laser_power(Thrust(0, 0), -6, -2) == 27
 
 s1 = Ship.parse([[1, 0, (-20, -10), (7, 0), [0, 3, 0, 1], 0, 64, 1], []])
 s2 = Ship.parse([[1, 0, (-20, -10), (7, 10), [0, 3, 0, 1], 0, 64, 1], []])

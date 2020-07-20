@@ -6,10 +6,9 @@ from states import ATACKER
 from states import State, JoinResult, ThrustPredictor, Thrust
 
 
-
-
 def min_abs_diff(x, y):
     return min(abs(x), abs(y))
+
 
 class OrbiterStrategy(object):
     def __init__(self, do_laser, printships, duplicate):
@@ -22,7 +21,7 @@ class OrbiterStrategy(object):
 
     def pick_stats(self, res):
         joinres = JoinResult.parse(res)
-        if joinres.budget > 490: # atacker
+        if joinres.budget > 490:  # atacker
             laser = 64
             regen = 10
             lives = 2
@@ -34,16 +33,15 @@ class OrbiterStrategy(object):
         return [fuel, laser, regen, lives]
 
     def choose_target(self, my_ship, thrust_action, enemy_ships):
-        dist = 10000
+        maxp = 0
         ship = None
-        my_pos = my_ship.next_round_expected_location(thrust_action)
         for enemy_ship in enemy_ships:
             predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
             enemy_pos = enemy_ship.next_round_expected_location(predicted_thrust)
-            coord_diff = min_abs_diff(my_pos[0] - enemy_pos[0], my_pos[1] - enemy_pos[1])
-            if coord_diff < dist:
+            laser_power = my_ship.laser_power(thrust_action, enemy_pos[0], enemy_pos[1])
+            if laser_power > maxp:
+                maxp = laser_power
                 ship = enemy_ship
-                dist = coord_diff
         return ship
 
     def asses_laser_power(self, my_ship, will_move, ex, ey):
@@ -114,9 +112,9 @@ class OrbiterStrategy(object):
             will_move = (thrust != (0, 0))
 
             actions.append([0, my_ship.id, thrust])
-            if enemy_ships:
-                thrust_action = Thrust(*thrust)
-                enemy_ship = self.choose_target(my_ship, thrust_action, enemy_ships)
+            thrust_action = Thrust(*thrust)
+            enemy_ship = self.choose_target(my_ship, thrust_action, enemy_ships)
+            if enemy_ship:
                 predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
                 ex, ey = enemy_ship.next_round_expected_location(predicted_thrust)
                 next_dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
