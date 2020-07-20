@@ -37,6 +37,7 @@ class LaserShipStrategy(object):
     def __init__(self):
         self.time_left = 385
         self.fuel_to_heat_cost = 2
+        self.no_overheat = True
 
     def find_better_orbit(self, my_ship, st):
         if my_ship.fuel == 0:
@@ -71,7 +72,7 @@ class LaserShipStrategy(object):
     def apply_laser(self, st, my_ship, enemy_ships, thrust):
         used_fuel = max(abs(thrust.x), abs(thrust.y))
         min_fuel = 10 + self.time_left // 5
-        extra_fuel = my_ship.fuel - used_fuel - min_fuel if my_ship.fuel > used_fuel + min_fuel else 0
+        extra_fuel = my_ship.fuel - used_fuel - min_fuel if (my_ship.fuel > used_fuel + min_fuel) and not self.no_overheat else 0
         max_lp = min(my_ship.laser, my_ship.max_heat - my_ship.heat - THRUST_HEAT * used_fuel + my_ship.regen + extra_fuel)
         exp_lp = min(my_ship.laser, my_ship.max_heat - my_ship.heat - THRUST_HEAT * used_fuel + my_ship.regen)
         if (max_lp == 0):
