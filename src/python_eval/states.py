@@ -160,6 +160,14 @@ class Ship(
         ox, oy = other.next_round_expected_location(other_thrust)
         return dist(sx - ox, sy - oy)
 
+    def next_vec_to_other(self, other, other_thrust):
+        sx, sy = self.next_round_expected_location()
+        ox, oy = other.next_round_expected_location(other_thrust)
+        return ox - sx, oy - sy
+
+    def can_take_heat(self):
+        return self.max_heat + self.regen - self.heat
+
     def laser_power(self, thrust, other_x, other_y, power=None):
         if power == None:
             power = self.laser
