@@ -78,7 +78,7 @@ class OrbiterStrategy(object):
         laser_power = my_ship.laser_power(thrust_action, enemy_pos[0], enemy_pos[1], pw)
 
         if laser_power > 0:
-            return laser_power
+            return pw
         return 0
 
     def apply(self, state):
