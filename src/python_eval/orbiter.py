@@ -40,7 +40,7 @@ class LaserShipStrategy(object):
 
     def find_better_orbit(self, my_ship, st):
         if my_ship.fuel == 0:
-            return []
+            return [], Thrust(0,0)
         pos = my_ship.position()
         fft = pos.safe_free_fall_rounds(st, self.time_left)
         best = [0, Thrust(0, 0)]
@@ -54,15 +54,21 @@ class LaserShipStrategy(object):
                 fft2 = pos_next.safe_free_fall_rounds(st, self.time_left)
                 if fft2 - fft > best[0] * cost:
                     best = [(fft2 - fft) / 2, t]
-        return [my_ship.do_thrust(best[1].x, best[1].y)] if best[0] > 0 else []
+        if best[0] > 0:
+            return [my_ship.do_thrust(best[1].x, best[1].y)], best[1]
+        else:
+            return [], Thrust(0,0)
 
     def apply_orbit(self, my_ship, st):
         tl = min(self.time_left, 20)
-        return [] if my_ship.position().safe_free_fall_rounds(st, tl) >= tl else self.find_better_orbit(my_ship, st)
+        if my_ship.position().safe_free_fall_rounds(st, tl) >= tl:
+            return [], Thrust(0, 0)
+        else:
+            return self.find_better_orbit(my_ship, st)
 
     def apply(self, st, my_ship, enemy_ships):
         self.time_left -= 1
-        actions = self.apply_orbit(my_ship, st)
+        actions, thrust = self.apply_orbit(my_ship, st)
         min_fuel = 10 + self.time_left // 5
         extra_fuel = my_ship.fuel - min_fuel if my_ship.fuel > min_fuel else 0
         max_lp = min(my_ship.laser, my_ship.max_heat - my_ship.heat + my_ship.regen + extra_fuel)
@@ -71,12 +77,13 @@ class LaserShipStrategy(object):
             return actions
 
         my_pos = my_ship.position()
-        my_pos1 = my_pos.next_round_expected()
+        my_pos1 = my_pos.next_round_expected(thrust)
         my_pos2 = my_pos.next_round_expected()
             
         min_energy_to_destroy = 1000
         destroy_ship = []
-        candidates = []
+        best_perfomance = 1.0
+        candidate = []
         for enemy_ship in enemy_ships:
             enemy_pos = enemy_ship.position()
             enemy_pos1 = enemy_pos.next_round_expected()
@@ -93,11 +100,20 @@ class LaserShipStrategy(object):
                 if lp < min_energy_to_destroy:
                     destroy_ship = [enemy_ship, lp, laser_power(enemy_pos1.x - my_pos1.x, enemy_pos1.y - my_pos1.y, lp)]
                     min_energy_to_destroy = lp
-            candidates = candidates + [[enemy_ship, max_lp, 1 if ldamage >= etd else 0, min(etd, ldamage), ldamage]]
-        if not candidates:
+            else:
+                ldamage_low = laser_power(enemy_pos1.x - my_pos1.x, enemy_pos1.y - my_pos1.y, exp_lp)
+                cost_low = max(exp_lp, 1)
+                cost_full = cost_low + self.fuel_to_heat_cost * (max_lp - exp_lp)
+                if ldamage / cost_full > best_perfomance:
+                    best_perfomance = ldamage / cost_full
+                    candidate = [enemy_ship, max_lp, ldamage]
+                if ldamage_low / cost_low > best_perfomance:
+                    best_perfomance = ldamage_low / cost_low
+                    candidate = [enemy_ship, exp_lp, ldamage_low]
+        if not destroy_ship and not candidate:
             return actions
         
-        best_candidate = destroy_ship if destroy_ship else candidates[0]
+        best_candidate = destroy_ship if destroy_ship else candidate
         print("Laser: ", best_candidate[0].id, best_candidate[1], best_candidate[2])
         enemy_pos = best_candidate[0].position()
         enemy_pos1 = enemy_pos.next_round_expected()
@@ -201,9 +217,9 @@ class OrbiterStrategy(object):
             print(f'T:{self.T} Player {st.me}:' + '\n' + "\n".join(str(s) for s in my_ships))
         for my_ship in my_ships:
             # TODO: beter logic
-            # if my_ship.laser > 0 and my_ship.lives == 1:
-            #     all_actions_of_all_ships.extend(self.laser_ship.apply(st, my_ship, enemy_ships))
-            #     continue
+            if my_ship.laser > 0 and my_ship.lives == 1:
+                all_actions_of_all_ships.extend(self.laser_ship.apply(st, my_ship, enemy_ships))
+                continue
             actions = []
             my_ship = my_ship
             birthday = self.birthday[my_ship.id]
