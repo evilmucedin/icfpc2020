@@ -54,6 +54,8 @@ def laser_power(dx, dy, power):
     maxx = abs(dx)
     maxy = abs(dy)
     max_xy = max(maxx, maxy)
+    if max_xy == 0:
+        return 3 * power + 1
     min_xy = min(maxx, maxy)
     d_xy = min_xy if 2 * min_xy < max_xy else max_xy - min_xy
     return 3 * power * (max_xy - 2 * d_xy) // max_xy + 1 - max_xy
