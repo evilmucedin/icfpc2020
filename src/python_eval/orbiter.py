@@ -6,6 +6,11 @@ from states import ATACKER
 from states import State, JoinResult, ThrustPredictor, Thrust
 
 
+
+
+def min_abs_diff(x, y):
+    return min(abs(x), abs(y))
+
 class OrbiterStrategy(object):
     def __init__(self, do_laser, printships, duplicate):
         self.do_laser = do_laser
@@ -23,20 +28,22 @@ class OrbiterStrategy(object):
             lives = 2
         else:
             laser = 16
-            regen = 4
-            lives = 16
+            regen = 16
+            lives = 4
         fuel = joinres.budget - LASER_COST * laser - REGEN_COST * regen - LIVES_COST * lives
         return [fuel, laser, regen, lives]
 
     def choose_target(self, my_ship, thrust_action, enemy_ships):
         dist = 10000
         ship = None
+        my_pos = my_ship.next_round_expected_location(thrust_action)
         for enemy_ship in enemy_ships:
             predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
-            next_dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
-            if next_dist < dist:
+            enemy_pos = enemy_ship.next_round_expected_location(predicted_thrust)
+            coord_diff = min_abs_diff(my_pos[0] - enemy_pos[0], my_pos[1] - enemy_pos[1])
+            if coord_diff < dist:
                 ship = enemy_ship
-                dist = next_dist
+                dist = coord_diff
         return ship
 
     def asses_laser_power(self, my_ship, will_move, ex, ey):
@@ -44,8 +51,6 @@ class OrbiterStrategy(object):
         x, y = my_ship.next_round_expected_location()
         dist = abs(x - ex) + abs(y - ey)
         pw = min(can_take_heat, my_ship.laser)
-        if dist > 150:
-            return 0
         if pw * 3 - dist > 40 or pw == my_ship.laser:
             return pw
         return 0
