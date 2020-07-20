@@ -4,6 +4,7 @@ import numpy as np
 from constants import *
 from orbit_util import trace_orbit, sign, get_dist_to_good, gravity_step, trace_orbit_np
 from states import State, JoinResult, ThrustPredictor, Thrust
+from orbiter import LaserShipStrategy
 
 
 def min_abs_diff(x, y):
@@ -22,6 +23,7 @@ class SwarmerStrategy(object):
         self.homing_dist_threshold = homing_dist_threshold
         self.thrust_predictors = {}
         self.mothership_id = None
+        self.mothership_strategy = LaserShipStrategy()
         self.printships = printships
 
     def pick_stats(self, res):
@@ -95,6 +97,11 @@ class SwarmerStrategy(object):
                     continue
                 actions.append(my_ship.do_duplicate_from_mothership(f, n))
                 break
+
+        # override all other actions with LaserShipStrategy
+        if True:
+            actions.extend(self.mothership_strategy.apply(st, my_ship, enemy_ships))
+            return actions
 
         my_pos = [my_ship.x, my_ship.y]
         my_vel = [my_ship.vx, my_ship.vy]
