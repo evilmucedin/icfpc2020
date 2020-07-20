@@ -70,6 +70,7 @@ class LaserShipStrategy(object):
             return self.find_better_orbit(my_ship, st)
 
     def apply_laser(self, st, my_ship, enemy_ships, thrust):
+        self.time_left -= 1
         used_fuel = max(abs(thrust.x), abs(thrust.y))
         min_fuel = 10 + self.time_left // 5
         extra_fuel = my_ship.fuel - used_fuel - min_fuel if (my_ship.fuel > used_fuel + min_fuel) and not self.no_overheat else 0
@@ -80,7 +81,6 @@ class LaserShipStrategy(object):
 
         my_pos = my_ship.position()
         my_pos1 = my_pos.next_round_expected(thrust)
-        my_pos2 = my_pos.next_round_expected()
             
         min_energy_to_destroy = 1000
         destroy_ship = []
@@ -122,7 +122,6 @@ class LaserShipStrategy(object):
         return [my_ship.do_laser(enemy_pos1.x, enemy_pos1.y, best_candidate[1])]
 
     def apply(self, st, my_ship, enemy_ships):
-        self.time_left -= 1
         actions1, thrust = self.apply_orbit(my_ship, st)
         actions2 = self.apply_laser(st, my_ship, enemy_ships, thrust)
         return actions1 + actions2
