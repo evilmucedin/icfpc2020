@@ -51,7 +51,7 @@ class OrbiterStrategy(object):
             lives = 2
         else:
             laser = 16
-            regen = 64
+            regen = 16
             lives = 32
         fuel = joinres.budget - LASER_COST * laser - REGEN_COST * regen - LIVES_COST * lives
         return [fuel, laser, regen, lives]
@@ -129,7 +129,7 @@ class OrbiterStrategy(object):
                 if od < dist:
                     dist = od
                     closest_ship = other
-            if closest_ship and dist < 4:
+            if closest_ship and dist < 2 and my_ship.vx == closest_ship.vx and my_ship.vy == closest_ship.vy:
                 dx = random.randint(-1, 1)
                 dy = random.randint(-1, 1)
                 x = thrust[0] if thrust[0] == dx else thrust[0] + dx
