@@ -97,8 +97,16 @@ class Ship(
     def do_laser(self, x, y, power=None):
         return [2, self.id, (x, y), self.laser if power is None else power]
 
-    def do_duplicate(self):
-        return [3, self.id, [self.fuel // 4, self.laser // 4, self.regen // 4, self.lives // 2]]
+    def do_duplicate(self, kamikaze_fuel, min_fuel_left=20):
+        if self.regen > 0: # get all kamikaze stats out
+            nkamikaze = min(self.lives - 1, 4)
+            fuel_to_use = min(kamikaze_fuel * nkamikaze, max(self.fuel - min_fuel_left, 0))
+            if fuel_to_use // nkamikaze < 4:
+                nkamikaze = 1
+            return [3, self.id, [fuel_to_use, 0, 0, nkamikaze]]
+        else:
+            nkamikaze = self.lives // 2
+            return [3, self.id, [self.fuel * nkamikaze // self.lives, 0, 0, nkamikaze]]
 
     def next_round_expected_speed(self, thrust):
         vx = self.vx - thrust.x
@@ -179,6 +187,7 @@ class ThrustPredictor(object):
         self.decay = decay
         self.acorr = acorr
         self.lag_w = [0] * (acorr + 1)
+        self.cached_predict = None
 
     def add(self, actions):
         thrust = Thrust(0, 0)
@@ -192,7 +201,12 @@ class ThrustPredictor(object):
                 self.lag_w[i] += 1
         self.hist.append(thrust)
 
+    def invcache(self):
+        self.cached_predict = None
+
     def predict(self):
+        if self.cached_predict:
+            return self.cached_predict
         bestv = 0
         bestk = Thrust(0, 0)
         for i in range(1, self.acorr + 1):
@@ -201,6 +215,7 @@ class ThrustPredictor(object):
                 bestk = self.hist[-i]
         # print(bestk)
         # print(self.hist)
+        self.cached_predict = bestk
         return bestk
 
 

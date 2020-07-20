@@ -40,19 +40,20 @@ class OrbiterStrategy(object):
         self.printships = printships
         self.duplicate = duplicate
         self.T = 0
+        self.kamikaze_fuel = 6
         self.birthday = {}
         self.thrust_predictors = {}
 
     def pick_stats(self, res):
         joinres = JoinResult.parse(res)
         if joinres.budget > 490:  # atacker
-            laser = 64
-            regen = 10
-            lives = 2
+            laser = 32
+            regen = 5
+            lives = 128
         else:
-            laser = 16
-            regen = 16
-            lives = 8
+            laser = 0
+            regen = 0
+            lives = 128
         fuel = joinres.budget - LASER_COST * laser - REGEN_COST * regen - LIVES_COST * lives
         return [fuel, laser, regen, lives]
 
@@ -82,6 +83,17 @@ class OrbiterStrategy(object):
             return pw
         return 0
 
+    def kamikaze_actions(self, my_ship, enemy_ships, enemy_predicted_location, enemy_predicted_thrust, my_ships):
+        thrust_action = Thrust(0, 0)
+        for enemy_ship in enemy_ships:
+            predicted_thrust = enemy_predicted_thrust[enemy_ship.id]
+            ex, ey = enemy_predicted_location[enemy_ship.id]
+            next_dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
+            if next_dist < 7:
+                return [my_ship.do_explode()]
+        return []
+
+
     def apply(self, state):
         self.T += 1
         st = State.parse(state)
@@ -91,9 +103,14 @@ class OrbiterStrategy(object):
             if ship.id not in self.thrust_predictors:
                 self.thrust_predictors[ship.id] = ThrustPredictor()
             self.thrust_predictors[ship.id].add(ship.last_actions)
+        for k, v in self.thrust_predictors.items():
+            v.invcache()
 
         my_ships = []
         enemy_ships = []
+        enemy_predicted_location = {}
+        enemy_predicted_thrust = {}
+
         for some_ship in st.ships:
             if some_ship.id not in self.birthday:
                 self.birthday[some_ship.id] = self.T
@@ -101,16 +118,28 @@ class OrbiterStrategy(object):
                 my_ships.append(some_ship)
             else:
                 enemy_ships.append(some_ship)
+                enemy_ship = some_ship
+                predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
+                ex, ey = enemy_ship.next_round_expected_location(predicted_thrust)
+                enemy_predicted_location[enemy_ship.id] = (ex, ey)
+                enemy_predicted_thrust[enemy_ship.id] = predicted_thrust
+
         if self.printships:
             print(f'T:{self.T} Player {st.me}:' + '\n' + "\n".join(str(s) for s in my_ships))
         for my_ship in my_ships:
             my_ship = my_ship
             birthday = self.birthday[my_ship.id]
             age = self.T - birthday
-            if self.duplicate and my_ship.lives > 1 and self.T > 5:
-                actions.append(my_ship.do_duplicate())
+            if self.duplicate and my_ship.lives > 1 and self.T > 6:
+                actions.append(my_ship.do_duplicate(self.kamikaze_fuel))
             my_pos = [my_ship.x, my_ship.y]
             my_vel = [my_ship.vx, my_ship.vy]
+
+            if my_ship.fuel == 0 or (my_ship.regen == 0 and age > 5):
+                # kamikaze
+                actions.extend(self.kamikaze_actions(my_ship, enemy_ships, enemy_predicted_location, enemy_predicted_thrust, my_ships))
+                continue
+
             cur_closest, cur_farthest = trace_orbit(my_pos[0], my_pos[1], my_vel[0], my_vel[1], 265 - self.T)
             thrust = (0, 0)
             if cur_closest <= 24:
@@ -151,15 +180,16 @@ class OrbiterStrategy(object):
             thrust_action = Thrust(*thrust)
             enemy_ship = self.choose_target(my_ship, thrust_action, enemy_ships)
             if enemy_ship:
-                predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
-                ex, ey = enemy_ship.next_round_expected_location(predicted_thrust)
+                predicted_thrust = enemy_predicted_thrust[enemy_ship.id]
+                ex, ey = enemy_predicted_location[enemy_ship.id]
                 next_dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
                 if my_ship.laser and self.do_laser:
                     power = self.asses_laser_power(my_ship, thrust_action, enemy_ship)
                     if power > 0:
                         actions.append(my_ship.do_laser(ex, ey, power))
-                if next_dist < 5 and st.me == ATACKER and self.T > 7 and len(my_ships) >= len(enemy_ships):
-                    actions = [my_ship.do_explode()]
-                if next_dist < 7 and st.me == DEFENDER and self.T > 7 and len(my_ships) > len(enemy_ships):
-                    actions = [my_ship.do_explode()]
+                # no explode for main ship
+                #if next_dist < 5 and st.me == ATACKER and self.T > 7 and len(my_ships) >= len(enemy_ships):
+                #    actions = [my_ship.do_explode()] # BUG! this deletes all commands for other ships
+                #if next_dist < 7 and st.me == DEFENDER and self.T > 7 and len(my_ships) > len(enemy_ships):
+                #    actions = [my_ship.do_explode()] # BUG! this deletes all commands for other ships
         return actions
