@@ -110,7 +110,7 @@ class OrbiterStrategy(object):
                 actions.append(my_ship.do_duplicate())
             my_pos = [my_ship.x, my_ship.y]
             my_vel = [my_ship.vx, my_ship.vy]
-            cur_closest, cur_farthest = trace_orbit(my_pos[0], my_pos[1], my_vel[0], my_vel[1])
+            cur_closest, cur_farthest = trace_orbit(my_pos[0], my_pos[1], my_vel[0], my_vel[1], 265-self.T)
             thrust = (0, 0)
             if cur_closest <= 24:
                 thrust = (-sign(my_pos[0]), -sign(my_pos[0])) if abs(my_pos[0]) > abs(my_pos[1]) else (
