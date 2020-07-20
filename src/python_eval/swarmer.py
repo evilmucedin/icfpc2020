@@ -1,19 +1,25 @@
 import random
 
+import numpy as np
 from constants import *
-from orbit_util import sign, get_dist_to_good, gravity_step, trace_orbit
-from states import State, JoinResult, ThrustPredictor, Thrust, dist as distfun
+from orbit_util import trace_orbit, sign, get_dist_to_good, gravity_step, trace_orbit_np
+from states import State, JoinResult, ThrustPredictor, Thrust
 
 
 def min_abs_diff(x, y):
     return min(abs(x), abs(y))
 
+
 def stat_cost(x):
     return x[0] + LASER_COST * x[1] + REGEN_COST * x[2] + LIVES_COST * x[3]
 
+
 class SwarmerStrategy(object):
-    def __init__(self, printships=False):
+    def __init__(self, homing_horizon=16, homing_T_threshold=64, homing_dist_threshold=3, printships=False):
         self.T = 0
+        self.homing_horizon = homing_horizon
+        self.homing_T_threshold = homing_T_threshold
+        self.homing_dist_threshold = homing_dist_threshold
         self.thrust_predictors = {}
         self.mothership_id = None
         self.printships = printships
@@ -23,22 +29,10 @@ class SwarmerStrategy(object):
         self.laser_ship_stats = [20, 32, 8, 1] if joinres.budget > 490 else [0, 0, 0, 0]
         laser_budget = stat_cost(self.laser_ship_stats)
         swarm_budget = joinres.budget - laser_budget
-        n = swarm_budget // 4
+        n = swarm_budget // 5
         swarm_fuel = swarm_budget - LIVES_COST * n
-        return [swarm_fuel + self.laser_ship_stats[0], self.laser_ship_stats[1], self.laser_ship_stats[2], n + self.laser_ship_stats[3]]
-
-    def choose_target(self, my_ship, thrust_action, enemy_ships):
-        dist = 10000
-        ship = None
-        my_pos = my_ship.next_round_expected_location(thrust_action)
-        for enemy_ship in enemy_ships:
-            predicted_thrust = self.enemy_thrust[enemy_ship.id]
-            enemy_pos = self.enemy_location[enemy_ship.id]
-            coord_diff = min_abs_diff(my_pos[0] - enemy_pos[0], my_pos[1] - enemy_pos[1])
-            if coord_diff < dist:
-                ship = enemy_ship
-                dist = coord_diff
-        return ship
+        return [swarm_fuel + self.laser_ship_stats[0], self.laser_ship_stats[1], self.laser_ship_stats[2],
+                n + self.laser_ship_stats[3]]
 
     def reset_precomputed(self):
         self.enemy_location = {}
@@ -51,12 +45,11 @@ class SwarmerStrategy(object):
         self.enemy_location[enemy_ship.id] = ex, ey
         self.enemy_thrust[enemy_ship.id] = predicted_thrust
 
-    # for mothership only
     def choose_explode_target(self, my_ship, thrust_action, enemy_ships):
         mindist = 10000
-        ship = None
-        if len(enemy_ships) == 0:
-            return enemy_ships[0]
+        ship = enemy_ships[0]
+        if len(enemy_ships) == 1:
+            return ship
         for enemy_ship in enemy_ships:
             predicted_thrust = self.enemy_thrust[enemy_ship.id]
             dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
@@ -96,7 +89,7 @@ class SwarmerStrategy(object):
         actions = []
         if my_ship.lives > 1:
             swarm_fuel = max(my_ship.fuel - self.laser_ship_stats[0], 0)
-            for n in range(my_ship.lives-1, 0, -1):
+            for n in range(my_ship.lives - 1, 0, -1):
                 f = (swarm_fuel * n) // (my_ship.lives - 1)
                 if 2 * (f + n) >= my_ship.total_hp():
                     continue
@@ -130,6 +123,19 @@ class SwarmerStrategy(object):
 
         return actions
 
+    def get_explode_gains(self, my_ship, my_ships, enemy_ships):
+        gains = 0
+        no_thrust = Thrust(0, 0)
+        for ship in my_ships:
+            if my_ship.id == ship.id:
+                gains -= my_ship.total_hp()
+            else:
+                dist = my_ship.next_dist(no_thrust, ship, no_thrust)
+                gains -= min(ship.total_hp(), my_ship.explode_power(dist))
+        for ship in enemy_ships:
+            dist = my_ship.next_dist(no_thrust, ship, no_thrust)
+            gains += min(ship.total_hp(), my_ship.explode_power(dist))
+        return gains
 
     def apply(self, state):
         self.T += 1
@@ -164,6 +170,15 @@ class SwarmerStrategy(object):
             if orbit not in orbits:
                 orbits[orbit] = []
             orbits[orbit].append(my_ship)
+
+        ex = np.array([ship.x for ship in enemy_ships])
+        ey = np.array([ship.y for ship in enemy_ships])
+        evx = np.array([ship.vx for ship in enemy_ships])
+        evy = np.array([ship.vy for ship in enemy_ships])
+        exs, eys, evxs, evys = trace_orbit_np(ex, ey, evx, evy, self.homing_horizon)
+
+        explode_action = None
+        explode_gains = 0
 
         for orbit, orbit_ships in orbits.items():
             orbit_dist_to_good = get_dist_to_good(*orbit)
@@ -228,10 +243,54 @@ class SwarmerStrategy(object):
                     continue
             if enemy_ships:
                 thrust_action = Thrust(0, 0)
-                enemy_ship = self.choose_target(my_ship, thrust_action, enemy_ships)
+                enemy_ship = self.choose_explode_target(my_ship, thrust_action, enemy_ships)
                 predicted_thrust = self.enemy_thrust[enemy_ship.id]
                 next_dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
                 if my_ship.explode_power(next_dist) and self.T > 7 and len(my_ships) >= len(enemy_ships):
-                    print('boom!')
-                    actions.append(my_ship.do_explode())
+                    new_gains = self.get_explode_gains(my_ship, my_ships, enemy_ships)
+                    if new_gains > explode_gains:
+                        explode_action = my_ship.do_explode()
+                        explode_gains = new_gains
+                        continue
+                # homing
+                if self.T > self.homing_T_threshold and my_ship.fuel > 0:
+                    possible_thrusts = []
+                    mx = []
+                    my = []
+                    mvx = []
+                    mvy = []
+                    quo_idx = None
+                    for dx in range(-2, 3):
+                        for dy in range(-2, 3):
+                            dist_to_good = get_dist_to_good(
+                                *gravity_step(orbit[0], orbit[1], orbit[2] + dx, orbit[3] + dy))
+                            if dist_to_good is not None and dist_to_good == 0:
+                                if dx == 0 and dy == 0:
+                                    quo_idx = len(mx)
+                                possible_thrusts.append((-dx, -dy))
+                                mx.append(orbit[0])
+                                my.append(orbit[1])
+                                mvx.append(orbit[2] + dx)
+                                mvy.append(orbit[3] + dy)
+                    mx, my, mvx, mvy = map(np.array, (mx, my, mvx, mvy))
+                    mxs, mys, _, _ = trace_orbit_np(mx, my, mvx, mvy, self.homing_horizon)
+                    dxs = np.abs(mxs[:, np.newaxis] - exs[np.newaxis])
+                    dys = np.abs(mys[:, np.newaxis] - eys[np.newaxis])
+                    ds = np.maximum(dxs, dys)
+                    ds = np.min(ds, axis=(1, 2))
+                    possible_thrusts_close = []
+                    for i in range(len(possible_thrusts)):
+                        if ds[i] <= self.homing_dist_threshold:
+                            possible_thrusts_close.append(possible_thrusts[i])
+                            if quo_idx == i:
+                                print('cancel homing')
+                                possible_thrusts_close = []
+                                break
+                    if possible_thrusts_close:
+                        print('homing!')
+                        thrust = random.choice(possible_thrusts_close)
+                        actions.append([0, my_ship.id, thrust])
+                        continue
+        if explode_action is not None:
+            actions.append(explode_action)
         return actions
