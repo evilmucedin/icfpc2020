@@ -116,7 +116,7 @@ class LaserShipStrategy(object):
             return []
         
         best_candidate = destroy_ship if destroy_ship else candidate
-        print("Laser: ", best_candidate[0].id, best_candidate[1], best_candidate[2])
+        # print("Laser: ", best_candidate[0].id, best_candidate[1], best_candidate[2])
         enemy_pos = best_candidate[0].position()
         enemy_pos1 = enemy_pos.next_round_expected()
         return [my_ship.do_laser(enemy_pos1.x, enemy_pos1.y, best_candidate[1])]
