@@ -50,6 +50,17 @@ ATACKER = 0
 DEFENDER = 1
 
 
+def laser_power(dx, dy, power):
+    maxx = abs(dx)
+    maxy = abs(dy)
+    max_xy = max(maxx, maxy)
+    if max_xy == 0:
+        return 3 * power + 1
+    min_xy = min(maxx, maxy)
+    d_xy = min_xy if 2 * min_xy < max_xy else max_xy - min_xy
+    return 3 * power * (max_xy - 2 * d_xy) // max_xy + 1 - max_xy
+
+
 class Ship(
     collections.namedtuple('Ship', 'player id x y vx vy fuel laser regen lives heat max_heat max_dv last_actions')):
 
@@ -115,12 +126,7 @@ class Ship(
         if power == None:
             power = self.laser
         x, y = self.next_round_expected_location(thrust)
-        maxx = abs(x - other_x)
-        maxy = abs(y - other_y)
-        max_xy = max(maxx, maxy)
-        min_xy = min(maxx, maxy)
-        d_xy = min_xy if 2 * min_xy < max_xy else max_xy - min_xy
-        return 3 * power * (max_xy - 2 * d_xy) // max_xy + 1 - max_xy
+        return laser_power(x - other_x, y - other_y, power)
 
 
 ship = Ship.parse([[1, 0, (-20, -10), (7, 0), [0, 3, 0, 1], 0, 64, 1], []])
