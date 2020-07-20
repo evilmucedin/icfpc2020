@@ -244,7 +244,7 @@ class SwarmerStrategy(object):
                 enemy_ship = self.choose_explode_target(my_ship, thrust_action, enemy_ships)
                 predicted_thrust = self.enemy_thrust[enemy_ship.id]
                 next_dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
-                if my_ship.explode_power(next_dist) and self.T > 7 and len(my_ships) >= len(enemy_ships):
+                if my_ship.explode_power(next_dist) and self.T > 7:
                     new_gains, hit_ids = self.get_explode_gains(my_ship, my_ships, enemy_ships, already_hist_ids)
                     if new_gains > 0:
                         explode_actions.append(my_ship.do_explode())
