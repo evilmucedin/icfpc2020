@@ -10,6 +10,30 @@ def min_abs_diff(x, y):
     return min(abs(x), abs(y))
 
 
+
+def move_towards(x, vx, tx):
+    """
+    x - where we are; vx - our speed; tx - where we want to be.
+    Returns optimal do_thrust power.
+    Speeds up only if we can later stop without overshoooting.
+    Slows down if not slowing down would result in overdo_lasering.
+    """
+    if x == tx:
+        return sign(vx)
+    s = sign(tx - x)
+    if s == -1:
+        x, vx, tx = -x, -vx, -tx
+
+    def can_stop(x, vx):
+        return x + vx * (vx - 1) // 2 <= tx
+
+    if can_stop(x + vx + 1, vx + 1):
+        return -s
+    elif can_stop(x + vx, vx):
+        return 0
+    else:
+        return s
+
 class OrbiterStrategy(object):
     def __init__(self, do_laser, printships, duplicate):
         self.do_laser = do_laser
@@ -106,6 +130,15 @@ class OrbiterStrategy(object):
                 x = thrust[0] if thrust[0] == dx else thrust[0] + dx
                 y = thrust[1] if thrust[1] == dy else thrust[0] + dy
                 thrust = x, y
+
+            if len(enemy_ships) == 1 and random.random() > 0.5 and st.me == ATACKER:
+                enemy_ship = enemy_ships[0]
+                predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
+                ex, ey = enemy_ship.next_round_expected_location(predicted_thrust)
+                x = move_towards(my_ship.x, my_ship.vx, ex)
+                y = move_towards(my_ship.y, my_ship.vy, ey)
+                thrust = x, y
+
             if my_ship.heat + THRUST_HEAT > my_ship.max_heat:
                 thrust = 0, 0
 
