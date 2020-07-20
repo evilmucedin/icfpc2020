@@ -135,6 +135,9 @@ class Ship(
     def position(self):
         return Position(self.x, self.y, self.vx, self.vy)
 
+    def do_duplicate_from_mothership(self, f, n):
+        return [3, self.id, [f, 0, 0, n]]
+
     def do_duplicate_even(self):
         return [3, self.id, [self.fuel // 2, self.laser // 2, self.regen // 2, self.lives // 2]]
 

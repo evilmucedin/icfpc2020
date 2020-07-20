@@ -8,24 +8,24 @@ from states import State, JoinResult, ThrustPredictor, Thrust, dist as distfun
 def min_abs_diff(x, y):
     return min(abs(x), abs(y))
 
+def stat_cost(x):
+    return x[0] + LASER_COST * x[1] + REGEN_COST * x[2] + LIVES_COST * x[3]
 
 class SwarmerStrategy(object):
-    def __init__(self):
+    def __init__(self, printships=False):
         self.T = 0
+        self.laser_ship_stats = [20, 32, 8, 1]
         self.thrust_predictors = {}
+        self.mothership_id = None
+        self.printships = printships
 
     def pick_stats(self, res):
         joinres = JoinResult.parse(res)
-        if joinres.budget > 490:  # attacker
-            laser = 64
-            regen = 10
-            lives = 2
-        else:
-            laser = 16
-            regen = 16
-            lives = 8
-        n = joinres.budget // 4
-        return [joinres.budget - 2 * n, 0, 0, n]
+        laser_budget = stat_cost(self.laser_ship_stats)
+        swarm_budget = joinres.budget - laser_budget
+        n = swarm_budget // 4
+        swarm_fuel = swarm_budget - LIVES_COST * n
+        return [swarm_fuel + self.laser_ship_stats[0], self.laser_ship_stats[1], self.laser_ship_stats[2], n + 1]
 
     def choose_target(self, my_ship, thrust_action, enemy_ships):
         dist = 10000
@@ -51,6 +51,94 @@ class SwarmerStrategy(object):
         self.enemy_location[enemy_ship.id] = ex, ey
         self.enemy_thrust[enemy_ship.id] = predicted_thrust
 
+    # for mothership only
+    def choose_explode_target(self, my_ship, thrust_action, enemy_ships):
+        mindist = 10000
+        ship = None
+        if len(enemy_ships) == 0:
+            return enemy_ships[0]
+        for enemy_ship in enemy_ships:
+            predicted_thrust = self.enemy_thrust[enemy_ship.id]
+            dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
+            if dist < mindist:
+                mindist = dist
+                ship = enemy_ship
+        return ship
+
+    def choose_laser_target(self, my_ship, thrust_action, enemy_ships):
+        maxp = 0
+        ship = None
+        for enemy_ship in enemy_ships:
+            predicted_thrust = self.enemy_thrust[enemy_ship.id]
+            enemy_pos = self.enemy_location[enemy_ship.id]
+            laser_power = my_ship.laser_power(thrust_action, enemy_pos[0], enemy_pos[1])
+            if laser_power > 0 and laser_power + enemy_ship.fuel > maxp:
+                maxp = laser_power + enemy_ship.fuel
+                ship = enemy_ship
+        return ship
+
+    def asses_laser_power(self, my_ship, thrust_action, enemy_ship):
+        can_take_heat = my_ship.max_heat + my_ship.regen - my_ship.heat - (
+            THRUST_HEAT if thrust_action != Thrust(0, 0) else 0)
+        pw = min(can_take_heat, my_ship.laser)
+
+        predicted_thrust = self.enemy_thrust[enemy_ship.id]
+        enemy_pos = self.enemy_location[enemy_ship.id]
+
+        laser_power = my_ship.laser_power(thrust_action, enemy_pos[0], enemy_pos[1], pw)
+
+        if laser_power > 0:
+            return pw
+        return 0
+
+    def get_mothership_actions(self, my_ship, st, enemy_ships):
+        # we need to spawn swarm first thing
+        actions = []
+        if my_ship.lives > 1:
+            swarm_fuel = max(my_ship.fuel - self.laser_ship_stats[0], 0)
+            for n in range(my_ship.lives-1, 0, -1):
+                f = (swarm_fuel * n) // (my_ship.lives - 1)
+                if 2 * (f + n) >= my_ship.total_hp():
+                    continue
+                actions.append(my_ship.do_duplicate_from_mothership(f, n))
+                break
+
+        my_pos = [my_ship.x, my_ship.y]
+        my_vel = [my_ship.vx, my_ship.vy]
+        cur_closest, cur_farthest = trace_orbit(my_pos[0], my_pos[1], my_vel[0], my_vel[1], 265 - self.T)
+        thrust = (0, 0)
+        if cur_closest <= 24:
+            thrust = (-sign(my_pos[0]), -sign(my_pos[0])) if abs(my_pos[0]) > abs(my_pos[1]) else (
+                sign(my_pos[1]), -sign(my_pos[1]))
+        if cur_farthest > st.field_size:
+            thrust = (sign(my_vel[0]), sign(my_vel[1]))
+
+        if my_ship.heat + THRUST_HEAT > my_ship.max_heat:
+            thrust = 0, 0
+
+        actions.append([0, my_ship.id, thrust])
+        thrust_action = Thrust(*thrust)
+        enemy_ship = self.choose_laser_target(my_ship, thrust_action, enemy_ships)
+        if enemy_ship:
+            predicted_thrust = self.enemy_thrust[enemy_ship.id]
+            ex, ey = self.enemy_location[enemy_ship.id]
+            next_dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
+            if my_ship.laser:
+                power = self.asses_laser_power(my_ship, thrust_action, enemy_ship)
+                if power > 0:
+                    actions.append(my_ship.do_laser(ex, ey, power))
+
+        enemy_ship = self.choose_explode_target(my_ship, thrust_action, enemy_ships)
+        if my_ship.lives == 1 and enemy_ship:
+            predicted_thrust = self.enemy_thrust[enemy_ship.id]
+            next_dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
+            if next_dist < 6 and st.me == ATACKER and self.T > 7 and len(my_ships) >= len(enemy_ships):
+                actions = [my_ship.do_explode()]
+            if next_dist < 6 and st.me == DEFENDER and self.T > 7 and len(my_ships) > len(enemy_ships):
+                actions = [my_ship.do_explode()]
+        return actions
+
+
     def apply(self, state):
         self.T += 1
         # assert self.T < 32
@@ -67,12 +155,19 @@ class SwarmerStrategy(object):
         enemy_ships = []
         for some_ship in st.ships:
             if some_ship.player == st.me:
+                if self.mothership_id == None:
+                    self.mothership_id = some_ship.id
                 my_ships.append(some_ship)
             else:
                 enemy_ships.append(some_ship)
                 self.precompute_enemy_stuff(some_ship)
         orbits = {}
+        if self.printships:
+            print(f'T:{self.T} Player {st.me}:' + '\n' + "\n".join(str(s) for s in my_ships))
         for my_ship in my_ships:
+            if my_ship.id == self.mothership_id:
+                actions.extend(self.get_mothership_actions(my_ship, st, enemy_ships))
+                continue
             orbit = (my_ship.x, my_ship.y, my_ship.vx, my_ship.vy)
             if orbit not in orbits:
                 orbits[orbit] = []
@@ -144,7 +239,7 @@ class SwarmerStrategy(object):
                 enemy_ship = self.choose_target(my_ship, thrust_action, enemy_ships)
                 predicted_thrust = self.enemy_thrust[enemy_ship.id]
                 vx, vy = my_ship.next_vec_to_other(enemy_ship, predicted_thrust)
-                if my_ship.fuel >= 2 and distfun(vx, vy) >= 2 and my_ship.can_take_heat() >= 2 * THRUST_HEAT:
+                if my_ship.fuel >= 2 and distfun(vx, vy) >= 2 and my_ship.can_take_heat() >= 2 * THRUST_HEAT and my_ship.max_dv == 2:
                     vx = -2 * sign(vx) if abs(vx) > 1 else -sign(vx)
                     vy = -2 * sign(vy) if abs(vy) > 1 else -sign(vy)
                     thrust_action = Thrust(vx, vy)
