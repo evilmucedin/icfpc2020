@@ -2,7 +2,7 @@ import random
 
 from constants import *
 from orbit_util import trace_orbit, sign
-from states import ATACKER
+from states import ATACKER, DEFENDER
 from states import State, JoinResult, ThrustPredictor, Thrust, laser_power
 
 
@@ -158,5 +158,7 @@ class OrbiterStrategy(object):
                     if power > 0:
                         actions.append(my_ship.do_laser(ex, ey, power))
                 if next_dist < 5 and st.me == ATACKER and self.T > 7 and len(my_ships) >= len(enemy_ships):
+                    actions.append(my_ship.do_explode())
+                if next_dist < 7 and st.me == DEFENDER and self.T > 7 and len(my_ships) > len(enemy_ships):
                     actions.append(my_ship.do_explode())
         return actions
