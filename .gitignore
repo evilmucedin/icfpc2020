@@ -35,3 +35,7 @@
 debug/
 release/
 build/
+
+# Cache
+src/python_eval/__pycache__
+player*.gif
