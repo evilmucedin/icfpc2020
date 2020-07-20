@@ -128,14 +128,6 @@ class SwarmerStrategy(object):
                 if power > 0:
                     actions.append(my_ship.do_laser(ex, ey, power))
 
-        enemy_ship = self.choose_explode_target(my_ship, thrust_action, enemy_ships)
-        if my_ship.lives == 1 and enemy_ship:
-            predicted_thrust = self.enemy_thrust[enemy_ship.id]
-            next_dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
-            if next_dist < 6 and st.me == ATACKER and self.T > 7 and len(my_ships) >= len(enemy_ships):
-                actions = [my_ship.do_explode()]
-            if next_dist < 6 and st.me == DEFENDER and self.T > 7 and len(my_ships) > len(enemy_ships):
-                actions = [my_ship.do_explode()]
         return actions
 
 
