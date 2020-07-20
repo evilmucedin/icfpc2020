@@ -1,7 +1,7 @@
 import numpy as np
 
 FIELD_SIZE = 128
-MAX_VELOCITY = 8
+MAX_VELOCITY = 10
 
 def sign(x):
     return 1 if x > 0 else -1 if x < 0 else 0
@@ -25,18 +25,20 @@ def trace_orbit(x, y, vx, vy, steps=256):
     return closest, farthest
 
 def is_good_orbit(x, y, vx, vy, steps=256):
+    farthest = 0
     for it in range(steps):
         x, y, vx, vy = gravity_step(x, y, vx, vy)
         dist = max(abs(x), abs(y))
+        farthest = max(farthest, dist)
         if dist <= 16 or dist >= 128:
             return False
-    return True
+    return farthest > 100
 
 if __name__ == "__main__":
     cnt = 0
     total = 0
     good_orbits = []
-    dist_to_good = np.full((2 * FIELD_SIZE + 1, 2 * FIELD_SIZE + 1, 2 * MAX_VELOCITY + 1, 2 * MAX_VELOCITY + 1), -1)
+    dist_to_good = np.full((2 * FIELD_SIZE + 1, 2 * FIELD_SIZE + 1, 2 * MAX_VELOCITY + 1, 2 * MAX_VELOCITY + 1), -1, dtype=np.int8)
     rev_edges = np.full((2 * FIELD_SIZE + 1, 2 * FIELD_SIZE + 1, 2 * MAX_VELOCITY + 1, 2 * MAX_VELOCITY + 1), None)
     for x in range(-FIELD_SIZE, FIELD_SIZE + 1):
         print(x)
@@ -69,7 +71,7 @@ if __name__ == "__main__":
                         if (abs(x1) > 16 or abs(y1) > 16) and dist_to_good[x1 + FIELD_SIZE, y1 + FIELD_SIZE, vx1 + MAX_VELOCITY, vy1 + MAX_VELOCITY] == -1:
                             dist_to_good[x1 + FIELD_SIZE, y1 + FIELD_SIZE, vx1 + MAX_VELOCITY, vy1 + MAX_VELOCITY] = dist_to_good   [x + FIELD_SIZE, y + FIELD_SIZE, vx + MAX_VELOCITY, vy + MAX_VELOCITY] + 1
                             q.append((x1, y1, vx1, vy1))
-    np.savez('dist_to_good.npz', dist_to_good)
+    np.savez_compressed('dist_to_good.npz', dist_to_good)
 
 dist_to_good = np.load('dist_to_good.npz')['arr_0']
 
