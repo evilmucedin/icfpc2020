@@ -107,17 +107,22 @@ class OrbiterStrategy(object):
             my_ship = my_ship
             birthday = self.birthday[my_ship.id]
             age = self.T - birthday
-            if self.duplicate and my_ship.lives > 1 and self.T > 5:
-                actions.append(my_ship.do_duplicate())
             my_pos = [my_ship.x, my_ship.y]
             my_vel = [my_ship.vx, my_ship.vy]
+            razduplyaemsya = True
             cur_closest, cur_farthest = trace_orbit(my_pos[0], my_pos[1], my_vel[0], my_vel[1], 265 - self.T)
             thrust = (0, 0)
             if cur_closest <= 24:
                 thrust = (-sign(my_pos[0]), -sign(my_pos[0])) if abs(my_pos[0]) > abs(my_pos[1]) else (
                     sign(my_pos[1]), -sign(my_pos[1]))
+                razduplyaemsya = False
             if cur_farthest > st.field_size:
                 thrust = (sign(my_vel[0]), sign(my_vel[1]))
+                razduplyaemsya = False
+
+            if self.duplicate and my_ship.lives > 1 and razduplyaemsya:
+                actions.append(my_ship.do_duplicate())
+
 
             # find closest friend - if too close randomize movement (include velocity in distance computation)
             closest_ship, dist = None, 1000
