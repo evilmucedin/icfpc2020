@@ -150,6 +150,23 @@ class Ship(
         x, y = self.next_round_expected_location(thrust)
         return laser_power(x - other_x, y - other_y, power)
 
+    def explode_power(self, thrust, other_x, other_y):
+        x, y = self.next_round_expected_location(thrust)
+        total_hp = self.total_hp()
+        if total_hp >= 15:
+            p = [214, 214, 214, 214, 128, 64, 32]
+        elif total_hp >= 3:
+            p = [195, 195, 195, 128, 64, 32]
+        elif total_hp >= 2:
+            p = [161, 161, 128, 64, 32]  # approx
+        else:
+            p = [128, 128, 64, 32]
+        d = dist(x - other_x, y - other_y)
+        if d < len(p):
+            return p[d]
+        else:
+            return 0
+
 
 ship = Ship.parse([[1, 0, (-20, -10), (7, 0), [0, 3, 0, 1], 0, 64, 1], []])
 assert ship.x == -20
