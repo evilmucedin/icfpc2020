@@ -122,7 +122,7 @@ class SwarmerStrategy(object):
             thrust = self.mothership_not_fall_on_planet(my_ship, st)
             if thrust.x != 0 or thrust.y != 0:
                 actions.append(my_ship.do_thrust(thrust.x, thrust.y))
-            actions.extend(self.mothership_strategy.apply_laser(st, my_ship, enemy_ships, thrust))
+            actions.extend(self.mothership_strategy.apply_laser(st, my_ship, enemy_ships, thrust, self.enemy_location))
             return actions
 
         my_pos = [my_ship.x, my_ship.y]
