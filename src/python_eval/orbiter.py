@@ -35,7 +35,7 @@ def move_towards(x, vx, tx):
 
 class LaserShipStrategy(object):
     def __init__(self):
-        self.time_left = 256
+        self.time_left = 385
 
     def find_better_orbit(self, my_ship, st):
         if my_ship.fuel == 0:
@@ -81,14 +81,14 @@ class LaserShipStrategy(object):
             if ldamage <= max_lp:
                 continue
             etd =  enemy_ship.energy_to_destroy()
-            candidates = candidates + [[enemy_ship, 1 if ldamage >= etd else 0, min(etd, ldamage)]]
+            candidates = candidates + [[enemy_ship, 1 if ldamage >= etd else 0, min(etd, ldamage), ldamage]]
         if not candidates:
             return actions
         
         best_candidate = candidates[0]
         enemy_pos = best_candidate[0].position()
         enemy_pos1 = enemy_pos.next_round_expected()
-        actions.append(my_ship.do_laser(enemy_pos1.x, enemy_pos1.x, max_lp))
+        actions.append(my_ship.do_laser(enemy_pos1.x, enemy_pos1.y, max_lp))
         return actions
 
 class OrbiterStrategy(object):
@@ -104,8 +104,8 @@ class OrbiterStrategy(object):
     def pick_stats(self, res):
         joinres = JoinResult.parse(res)
         if joinres.budget > 490:  # atacker
-            laser = 64
-            regen = 10
+            laser = 70 # 64
+            regen = 15 # 10
             lives = 1
         else:
             laser = 16
@@ -189,8 +189,8 @@ class OrbiterStrategy(object):
         for my_ship in my_ships:
             # TODO: beter logic
             # if my_ship.laser > 0 and my_ship.lives == 1:
-            #    all_actions_of_all_ships.extend(self.laser_ship.apply(st, my_ship, enemy_ships))
-            #    continue
+            #   all_actions_of_all_ships.extend(self.laser_ship.apply(st, my_ship, enemy_ships))
+            #   continue
             actions = []
             my_ship = my_ship
             birthday = self.birthday[my_ship.id]
