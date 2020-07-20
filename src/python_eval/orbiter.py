@@ -62,7 +62,7 @@ class OrbiterStrategy(object):
         if len(enemy_ships) == 0:
             return enemy_ships[0]
         for enemy_ship in enemy_ships:
-            predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
+            predicted_thrust = self.enemy_thrust[enemy_ship.id]
             dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
             if dist < mindist:
                 mindist = dist
@@ -73,8 +73,8 @@ class OrbiterStrategy(object):
         maxp = 0
         ship = None
         for enemy_ship in enemy_ships:
-            predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
-            enemy_pos = enemy_ship.next_round_expected_location(predicted_thrust)
+            predicted_thrust = self.enemy_thrust[enemy_ship.id]
+            enemy_pos = self.enemy_location[enemy_ship.id]
             laser_power = my_ship.laser_power(thrust_action, enemy_pos[0], enemy_pos[1])
             if laser_power > 0 and laser_power + enemy_ship.fuel > maxp:
                 maxp = laser_power + enemy_ship.fuel
@@ -86,8 +86,8 @@ class OrbiterStrategy(object):
             THRUST_HEAT if thrust_action != Thrust(0, 0) else 0)
         pw = min(can_take_heat, my_ship.laser)
 
-        predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
-        enemy_pos = enemy_ship.next_round_expected_location(predicted_thrust)
+        predicted_thrust = self.enemy_thrust[enemy_ship.id]
+        enemy_pos = self.enemy_location[enemy_ship.id]
 
         laser_power = my_ship.laser_power(thrust_action, enemy_pos[0], enemy_pos[1], pw)
 
@@ -107,9 +107,20 @@ class OrbiterStrategy(object):
         return apply_main_orbit(my_ship)
 
 
+    def reset_precomputed(self):
+        self.enemy_location = {}
+        self.enemy_thrust = {}
+
+    def precompute_enemy_stuff(self, enemy_ship):
+        predicted_thrust = self.thrust_predictors[enemy_ship.id].predict() if enemy_ship.fuel > 0 else Thrust(0, 0)
+        ex, ey = enemy_ship.next_round_expected_location(predicted_thrust)
+        self.enemy_location[enemy_ship.id] = ex, ey
+        self.enemy_thrust[enemy_ship.id] = predicted_thrust
+
     def apply(self, state):
         self.T += 1
         st = State.parse(state)
+        self.reset_precomputed()
         actions = []
 
         for ship in st.ships:
@@ -126,6 +137,7 @@ class OrbiterStrategy(object):
                 my_ships.append(some_ship)
             else:
                 enemy_ships.append(some_ship)
+                self.precompute_enemy_stuff(some_ship)
         if self.printships:
             print(f'T:{self.T} Player {st.me}:' + '\n' + "\n".join(str(s) for s in my_ships))
         for my_ship in my_ships:
@@ -180,8 +192,8 @@ class OrbiterStrategy(object):
             thrust_action = Thrust(*thrust)
             enemy_ship = self.choose_laser_target(my_ship, thrust_action, enemy_ships)
             if enemy_ship:
-                predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
-                ex, ey = enemy_ship.next_round_expected_location(predicted_thrust)
+                predicted_thrust = self.enemy_thrust[enemy_ship.id]
+                ex, ey = self.enemy_location[enemy_ship.id]
                 next_dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
                 if my_ship.laser and self.do_laser:
                     power = self.asses_laser_power(my_ship, thrust_action, enemy_ship)
@@ -190,7 +202,7 @@ class OrbiterStrategy(object):
 
             enemy_ship = self.choose_explode_target(my_ship, thrust_action, enemy_ships)
             if enemy_ship:
-                predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
+                predicted_thrust = self.enemy_thrust[enemy_ship.id]
                 next_dist = my_ship.next_dist(thrust_action, enemy_ship, predicted_thrust)
                 if next_dist < 6 and st.me == ATACKER and self.T > 7 and len(my_ships) >= len(enemy_ships):
                     actions = [my_ship.do_explode()]
