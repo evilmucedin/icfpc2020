@@ -89,6 +89,20 @@ class SwarmerStrategy(object):
 
     # should return Thrust(x,y) object, can get more stuff passed if needed
     def mothership_not_fall_on_planet(self, my_ship, st):
+        current_dist_to_good = get_dist_to_good(my_ship.x, my_ship.y, my_ship.vx, my_ship.vy)
+        if current_dist_to_good is not None and current_dist_to_good > 0:
+            possible_thrusts = []
+            for dx in range(-2, 3):
+                for dy in range(-2, 3):
+                    if my_ship.fuel == 1 and max(abs(dx), abs(dy)) == 2:
+                        continue
+                    new_dist_to_good = get_dist_to_good(
+                        *gravity_step(my_ship.x, my_ship.y, my_ship.vx + dx, my_ship.vy + dy))
+                    if new_dist_to_good is not None and new_dist_to_good == current_dist_to_good - 1:
+                        possible_thrusts.append((-dx, -dy))
+            if possible_thrusts:
+                thrust = random.choice(possible_thrusts)
+                return Thrust(*thrust)
         return Thrust(0, 0)
 
     def get_mothership_actions(self, my_ship, st, enemy_ships):
