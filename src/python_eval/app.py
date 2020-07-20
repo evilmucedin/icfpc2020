@@ -1,6 +1,7 @@
 import requests
 import sys
 
+from swarmer import SwarmerStrategy
 from orbiter import OrbiterStrategy
 from interaction import send2
 
@@ -20,7 +21,8 @@ def main():
     player_key = sys.argv[2]
     print('ServerUrl: %s; PlayerKey: %s' % (server_url, player_key))
     sender = lambda msg: send2(msg, server_url=server_url)
-    strategy = OrbiterStrategy(do_laser=True, printships=False, duplicate=True)
+    # strategy = OrbiterStrategy(do_laser=True, printships=False, duplicate=True)
+    strategy = SwarmerStrategy()
     player(int(player_key), strategy, sender=sender)
 
 
