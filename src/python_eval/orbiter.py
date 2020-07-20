@@ -131,7 +131,7 @@ class OrbiterStrategy(object):
                 y = thrust[1] if thrust[1] == dy else thrust[0] + dy
                 thrust = x, y
 
-            if len(enemy_ships) == 1 and random.random() < self.T / 255 and st.me == ATACKER:
+            if len(enemy_ships) == 1 and random.random() < self.T / 255.0 and st.me == ATACKER:
                 enemy_ship = enemy_ships[0]
                 predicted_thrust = self.thrust_predictors[enemy_ship.id].predict()
                 ex, ey = enemy_ship.next_round_expected_location(predicted_thrust)
