@@ -86,6 +86,11 @@ class SwarmerStrategy(object):
             return pw
         return 0
 
+
+    # should return Thrust(x,y) object, can get more stuff passed if needed
+    def mothership_not_fall_on_planet(self, my_ship, st):
+        return Thrust(0, 0)
+
     def get_mothership_actions(self, my_ship, st, enemy_ships):
         # we need to spawn swarm first thing
         actions = []
@@ -100,7 +105,10 @@ class SwarmerStrategy(object):
 
         # override all other actions with LaserShipStrategy
         if True:
-            actions.extend(self.mothership_strategy.apply(st, my_ship, enemy_ships))
+            thrust = self.mothership_not_fall_on_planet(my_ship, st)
+            if thrust.x != 0 or thrust.y != 0:
+                actions.append(my_ship.do_thrust(thrust.x, thrust.y))
+            actions.extend(self.mothership_strategy.apply_laser(st, my_ship, enemy_ships, thrust))
             return actions
 
         my_pos = [my_ship.x, my_ship.y]
