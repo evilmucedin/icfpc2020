@@ -14,18 +14,18 @@ def stat_cost(x):
 class SwarmerStrategy(object):
     def __init__(self, printships=False):
         self.T = 0
-        self.laser_ship_stats = [20, 32, 8, 1]
         self.thrust_predictors = {}
         self.mothership_id = None
         self.printships = printships
 
     def pick_stats(self, res):
         joinres = JoinResult.parse(res)
+        self.laser_ship_stats = [20, 32, 8, 1] if joinres.budget > 490 else [0, 0, 0, 0]
         laser_budget = stat_cost(self.laser_ship_stats)
         swarm_budget = joinres.budget - laser_budget
         n = swarm_budget // 4
         swarm_fuel = swarm_budget - LIVES_COST * n
-        return [swarm_fuel + self.laser_ship_stats[0], self.laser_ship_stats[1], self.laser_ship_stats[2], n + 1]
+        return [swarm_fuel + self.laser_ship_stats[0], self.laser_ship_stats[1], self.laser_ship_stats[2], n + self.laser_ship_stats[3]]
 
     def choose_target(self, my_ship, thrust_action, enemy_ships):
         dist = 10000
@@ -147,7 +147,7 @@ class SwarmerStrategy(object):
         enemy_ships = []
         for some_ship in st.ships:
             if some_ship.player == st.me:
-                if self.mothership_id == None:
+                if self.mothership_id == None and self.laser_ship_stats[3] > 0:
                     self.mothership_id = some_ship.id
                 my_ships.append(some_ship)
             else:
