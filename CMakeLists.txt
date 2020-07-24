@@ -19,6 +19,11 @@ file( GLOB_RECURSE APP_SOURCES RELATIVE "${PROJECT_SOURCE_DIR}" "${PROJECT_SOURC
 add_executable( app ${APP_SOURCES} )
 target_link_libraries( app ${CMAKE_THREAD_LIBS_INIT} stb )
 
+find_package(OpenSSL REQUIRED)
+file( GLOB_RECURSE APP2_SOURCES RELATIVE "${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/src/app2/*.cpp" )
+add_executable( app2 ${APP2_SOURCES} )
+target_link_libraries( app2 ${CMAKE_THREAD_LIBS_INIT} stb OpenSSL::SSL )
+
 file( GLOB_RECURSE APP_SOURCES RELATIVE "${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/src/stb/sample/*.cpp" )
 add_executable( stb_sample ${APP_SOURCES} )
 target_link_libraries( stb_sample ${CMAKE_THREAD_LIBS_INIT} stb )
